@@ -20,6 +20,11 @@
             </div>
           </div>
           <div v-else>
+            <AiAnalyticsPanel
+              v-if="organizationsStore.selectedOrganization?.id"
+              :organizationId="organizationsStore.selectedOrganization.id"
+              :filters="filters"
+            />
             <div class="flex justify-between items-center mb-6">
               <div>
                 <h3 class="text-lg font-semibold text-gray-900">Аналитика перемещений</h3>
@@ -381,6 +386,7 @@ import Sidebar from './Sidebar.vue';
 import Header from './Header.vue';
 import Footer from './Footer.vue';
 import ItemVariantSelector from './ItemVariantSelector.vue';
+import AiAnalyticsPanel from './AiAnalyticsPanel.vue';
 import warehouseService from '@/services/warehouseService.js';
 import { useOrganizationsStore } from '@/stores/organizations.js';
 import { useSidebar } from '@/composables/useSidebar.js';

@@ -3,7 +3,7 @@
     <div class="flex items-center justify-between">
       <div class="flex items-center space-x-2">
         <img class="w-5 h-5" src="/logo.svg" alt="Logo"/>
-        <span class="text-sm text-gray-600">Logisto WMS © 2025</span>
+        <span class="text-sm text-gray-600">Logisto WMS © 2026</span>
       </div>
       <router-link
         to="/legal"
