@@ -3,6 +3,7 @@ import Header from "@/components/Header.vue";
 import HomeHeader from "@/components/HomeHeader.vue";
 import Footer from "@/components/Footer.vue";
 import YandexMetrika from "@/components/common/YandexMetrika.vue";
+import AnonymousChatWidget from "@/components/chat/AnonymousChatWidget.vue";
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuth } from '@/composables/useAuth.js';
@@ -36,6 +37,9 @@ const isHomePage = computed(() => {
       <router-view v-if="!isLoading || !isDashboard" />
     </main>
     <Footer v-if="!isDashboard" />
+
+    <!-- Anonymous chat widget (landing pages only) -->
+    <AnonymousChatWidget v-if="!isDashboard" />
   </div>
 </template>
 
