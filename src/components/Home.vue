@@ -17,23 +17,8 @@
             Полное решение для управления складскими операциями, контроля товарных потоков и оптимизации логистических процессов
           </p>
           
-          <!-- Scroll Down Arrow -->
-          <div class="flex justify-center mb-8">
-            <button 
-              @click="scrollToDemo"
-              class="scroll-arrow group p-3 rounded-full border-2 border-gray-300 hover:border-blue-400 transition-all duration-300 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              title="Перейти к демонстрации"
-            >
-              <svg 
-                class="w-6 h-6 text-gray-400 group-hover:text-blue-500 transition-colors duration-300 animate-gentle-bounce" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-              </svg>
-            </button>
-          </div>
+          <!-- Semantic Search -->
+          <ItemSearchBar />
           
           <div v-if="isAuthenticated" class="inline-block p-4 bg-white rounded-xl shadow-lg border border-green-200">
             <div class="flex items-center space-x-3">
@@ -787,6 +772,7 @@ import { useRouter } from 'vue-router';
 import { watch, onMounted, ref, computed, onBeforeUnmount, nextTick } from 'vue';
 import Chart from 'chart.js/auto';
 import CallToAction from '@/components/common/CallToAction.vue';
+import ItemSearchBar from '@/components/common/ItemSearchBar.vue';
 
 const { isAuthenticated, username, updateAuthState } = useAuth();
 const router = useRouter();
@@ -1144,18 +1130,6 @@ const redirectToDashboard = () => {
   });
 };
 
-// Функция плавного скролла к демонстрации
-const scrollToDemo = () => {
-  const demoSection = document.getElementById('demo-section');
-  if (demoSection) {
-    demoSection.scrollIntoView({ 
-      behavior: 'smooth',
-      block: 'start',
-      inline: 'nearest'
-    });
-  }
-};
-
 // Следим за изменением состояния аутентификации
 watch(isAuthenticated, (newValue) => {
   console.log('👀 Home: Auth state changed:', newValue);
@@ -1207,30 +1181,3 @@ onBeforeUnmount(() => {
 });
 </script>
 
-<style scoped>
-@keyframes gentle-bounce {
-  0%, 20%, 50%, 80%, 100% {
-    transform: translateY(0);
-  }
-  40% {
-    transform: translateY(-8px);
-  }
-  60% {
-    transform: translateY(-4px);
-  }
-}
-
-.animate-gentle-bounce {
-  animation: gentle-bounce 2s infinite;
-}
-
-.scroll-arrow {
-  opacity: 0.7;
-  transition: all 0.3s ease;
-}
-
-.scroll-arrow:hover {
-  opacity: 1;
-  transform: scale(1.1);
-}
-</style>
