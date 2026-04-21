@@ -13,8 +13,10 @@ import Products from '@/components/Products.vue';
 import ItemMovements from '@/components/ItemMovements.vue';
 import Clients from '@/components/Clients.vue';
 import Reports from '@/components/Reports.vue';
+import ChatPage from '@/components/chat/ChatPage.vue';
 import MyPlan from '@/components/MyPlan.vue';
 import { useAuth } from '@/composables/useAuth.js';
+import { useChatStore } from '@/stores/chat.js';
 
 const routes = [
     { path: '/', component: Home },
@@ -58,9 +60,14 @@ const routes = [
         component: Clients,
         meta: { requiresAuth: true }
     },
-    { 
-        path: '/dashboard/reports', 
+    {
+        path: '/dashboard/reports',
         component: Reports,
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/dashboard/chat',
+        component: ChatPage,
         meta: { requiresAuth: true }
     },
     { path: '/my-plan', component: MyPlan },
@@ -127,6 +134,19 @@ router.beforeEach(async (to, from, next) => {
     } else {
         console.log('❌ User not authenticated, redirecting to home');
         next('/');
+    }
+});
+
+// Auto-connect employee chat WebSocket on dashboard pages
+router.afterEach((to) => {
+    if (to.path.startsWith('/dashboard')) {
+        const { isAuthenticated } = useAuth();
+        if (isAuthenticated.value) {
+            const chatStore = useChatStore();
+            if (chatStore.connectionStatus === 'disconnected' && chatStore.mode !== 'anonymous') {
+                chatStore.initEmployeeConnection();
+            }
+        }
     }
 });
 

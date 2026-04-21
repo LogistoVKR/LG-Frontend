@@ -142,6 +142,18 @@
               </div>
             </div>
           </div>
+
+          <!-- Chat button -->
+          <button
+            v-if="result.organizationId"
+            @click="startChat(result.organizationId, result.organizationName)"
+            class="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            Написать в организацию
+          </button>
         </div>
       </div>
     </div>
@@ -151,6 +163,9 @@
 <script setup>
 import { ref, computed } from 'vue';
 import searchService from '@/services/searchService.js';
+import { useChatStore } from '@/stores/chat.js';
+
+const chatStore = useChatStore();
 
 const searchQuery = ref('');
 const searchResults = ref(null);
@@ -210,5 +225,9 @@ function formatPrice(price, currency) {
 
 function formatStorageType(type) {
   return type === 'WAREHOUSE' ? 'Склад' : 'Точка продаж';
+}
+
+function startChat(organizationId, organizationName) {
+  chatStore.openAnonymousChat(organizationId, organizationName || 'Организация');
 }
 </script>

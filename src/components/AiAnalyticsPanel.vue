@@ -3,23 +3,20 @@
     <!-- Toggle Button -->
     <button
       @click="togglePanel"
-      class="w-full flex items-center justify-between px-6 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium rounded-lg shadow-sm hover:from-indigo-600 hover:to-purple-700 transition-all duration-200"
+      class="w-full flex items-center justify-between px-6 py-4 bg-gray-700 text-white font-medium rounded-lg shadow-sm hover:bg-gray-800 transition-all duration-200"
       :class="{ 'rounded-b-none': isExpanded }"
     >
       <div class="flex items-center space-x-3">
-        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M12 2L9.19 8.63L2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2zm3.48 12.3l1.07 4.58-3.92-2.38L8.71 18.88l1.07-4.58-3.56-3.08 4.7-.4L12 6.6l1.08 4.22 4.7.4-3.3 3.48z"/>
-        </svg>
         <span class="text-lg">AI Аналитика</span>
       </div>
       <div class="flex items-center space-x-3">
-        <span v-if="aiData && !aiLoading" class="text-sm text-indigo-200">
+        <span v-if="aiData && !aiLoading" class="text-sm text-gray-300">
           Данные загружены
         </span>
         <button
           v-if="aiData && !aiLoading && isExpanded"
           @click.stop="refreshData"
-          class="text-sm text-indigo-200 hover:text-white transition-colors underline"
+          class="text-sm text-gray-300 hover:text-white transition-colors underline"
         >
           Обновить
         </button>
