@@ -42,10 +42,10 @@
 
         <!-- Unread badge -->
         <span
-          v-if="getUnread(chat.id) > 0"
+          v-if="(unreadMap[chat.id] || 0) > 0"
           class="ml-2 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5 flex-shrink-0"
         >
-          {{ getUnread(chat.id) > 99 ? '99+' : getUnread(chat.id) }}
+          {{ (unreadMap[chat.id] || 0) > 99 ? '99+' : (unreadMap[chat.id] || 0) }}
         </span>
       </div>
     </div>
@@ -83,9 +83,7 @@ function getInitial(name) {
   return name.charAt(0).toUpperCase();
 }
 
-function getUnread(chatId) {
-  return chatStore.unreadCounts[chatId] || 0;
-}
+const unreadMap = computed(() => chatStore.unreadCounts);
 
 function formatTime(timestamp) {
   if (!timestamp) return '';

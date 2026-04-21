@@ -4,6 +4,15 @@ import chatWebSocket from '@/services/chatWebSocket.js';
 import { useAuth } from '@/composables/useAuth.js';
 import { useOrganizationsStore } from '@/stores/organizations.js';
 
+function safeDecodeURI(str) {
+  if (!str) return str;
+  try {
+    return decodeURIComponent(str.replace(/\+/g, ' '));
+  } catch {
+    return str;
+  }
+}
+
 export const useChatStore = defineStore('chat', () => {
   // --- Connection state ---
   const connectionStatus = ref('disconnected'); // 'connecting'|'connected'|'disconnected'|'reconnecting'|'failed'
@@ -25,6 +34,7 @@ export const useChatStore = defineStore('chat', () => {
   const activeChatMessages = ref([]);
   const activeChatClosed = ref(false);
   const unreadCounts = ref({});
+  const isChatPageVisible = ref(false);
   const chatError = ref(null);
 
   const totalUnread = computed(() => {
@@ -42,7 +52,22 @@ export const useChatStore = defineStore('chat', () => {
       connectionStatus.value = 'connecting';
     });
     chatWebSocket.on('_connected', () => {
+      const wasReconnecting = connectionStatus.value === 'reconnecting' || connectionStatus.value === 'failed';
       connectionStatus.value = 'connected';
+
+      // After reconnect — re-request data to recover missed messages
+      if (wasReconnecting) {
+        if (mode.value === 'employee') {
+          // Re-request chat list (server sends it on connect, but just in case)
+          chatWebSocket.send({ type: 'LIST_CHATS' });
+          // Re-request active chat history
+          if (activeChatId.value) {
+            chatWebSocket.send({ type: 'LOAD_HISTORY', chatSessionId: activeChatId.value });
+          }
+        } else if (mode.value === 'anonymous' && anonymousChatSessionId.value) {
+          chatWebSocket.send({ type: 'LOAD_HISTORY', chatSessionId: anonymousChatSessionId.value });
+        }
+      }
     });
     chatWebSocket.on('_disconnected', () => {
       connectionStatus.value = 'disconnected';
@@ -191,6 +216,10 @@ export const useChatStore = defineStore('chat', () => {
     chatError.value = null;
   }
 
+  function setChatPageVisible(visible) {
+    isChatPageVisible.value = visible;
+  }
+
   function manualReconnect() {
     if (mode.value === 'employee') {
       initEmployeeConnection();
@@ -214,7 +243,7 @@ export const useChatStore = defineStore('chat', () => {
         chats.value.unshift({
           id: msg.chatSessionId,
           anonymousId: data.anonymousId || null,
-          anonymousName: data.anonymousName || null,
+          anonymousName: safeDecodeURI(data.anonymousName) || null,
           status: data.status || 'ACTIVE',
           created: data.created || new Date().toISOString(),
           lastMessage: data.lastMessage || null,
@@ -229,7 +258,7 @@ export const useChatStore = defineStore('chat', () => {
       // Only add if it's from the other side (employee)
       anonymousMessages.value.push({
         content: msg.content,
-        senderName: msg.senderName,
+        senderName: safeDecodeURI(msg.senderName),
         isOwn: false,
         timestamp: new Date().toISOString(),
       });
@@ -243,11 +272,11 @@ export const useChatStore = defineStore('chat', () => {
         chat.lastMessageTime = new Date().toISOString();
       }
 
-      if (chatId === activeChatId.value) {
+      if (chatId === activeChatId.value && isChatPageVisible.value) {
         // Active chat — show in conversation
         activeChatMessages.value.push({
           content: msg.content,
-          senderName: msg.senderName,
+          senderName: safeDecodeURI(msg.senderName),
           senderType: null, // We don't get senderType in NEW_MESSAGE
           isOwn: false, // Will be styled by senderName comparison or left as-is
           timestamp: new Date().toISOString(),
@@ -279,7 +308,7 @@ export const useChatStore = defineStore('chat', () => {
     chats.value = (msg.data || []).map(chat => ({
       id: chat.id,
       anonymousId: chat.anonymousId,
-      anonymousName: chat.anonymousName,
+      anonymousName: safeDecodeURI(chat.anonymousName),
       status: chat.status,
       created: chat.created,
       lastMessage: chat.lastMessage,
@@ -292,7 +321,7 @@ export const useChatStore = defineStore('chat', () => {
       anonymousMessages.value = (msg.data || []).map(m => ({
         id: m.id,
         content: m.content,
-        senderName: m.senderName || null,
+        senderName: safeDecodeURI(m.senderName) || null,
         senderType: m.senderType,
         isOwn: m.senderType === 'ANONYMOUS',
         timestamp: m.created,
@@ -301,7 +330,7 @@ export const useChatStore = defineStore('chat', () => {
       activeChatMessages.value = (msg.data || []).map(m => ({
         id: m.id,
         content: m.content,
-        senderName: m.senderName || null,
+        senderName: safeDecodeURI(m.senderName) || null,
         senderType: m.senderType,
         isOwn: m.senderType === 'EMPLOYEE',
         timestamp: m.created,
@@ -355,6 +384,7 @@ export const useChatStore = defineStore('chat', () => {
     activeChatClosed,
     unreadCounts,
     totalUnread,
+    isChatPageVisible,
     chatError,
 
     // Anonymous actions
@@ -370,6 +400,7 @@ export const useChatStore = defineStore('chat', () => {
     sendEmployeeMessage,
     closeChatSession,
     disconnectEmployee,
+    setChatPageVisible,
 
     // Shared
     manualReconnect,

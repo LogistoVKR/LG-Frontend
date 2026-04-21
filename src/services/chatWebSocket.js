@@ -7,9 +7,19 @@ class ChatWebSocketService {
     this.reconnectAttempts = 0;
     this.maxReconnectAttempts = 10;
     this.reconnectTimer = null;
+    this.pingTimer = null;
+    this.pongTimeout = null;
     this.connectionParams = null;
     this.isIntentionallyClosed = false;
     this.listeners = new Map();
+
+    this._onOnline = this._onOnline.bind(this);
+    this._onVisibilityChange = this._onVisibilityChange.bind(this);
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', this._onOnline);
+      document.addEventListener('visibilitychange', this._onVisibilityChange);
+    }
   }
 
   _getWsBaseUrl() {
@@ -41,6 +51,7 @@ class ChatWebSocketService {
   disconnect() {
     this.isIntentionallyClosed = true;
     this._clearReconnectTimer();
+    this._stopPing();
     if (this.ws) {
       this.ws.close();
       this.ws = null;
@@ -113,11 +124,19 @@ class ChatWebSocketService {
       console.log('[ChatWS] Connected');
       this.reconnectAttempts = 0;
       this._emit('_connected');
+      this._startPing();
     };
 
     this.ws.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);
+        if (msg.type === 'PONG') {
+          if (this.pongTimeout) {
+            clearTimeout(this.pongTimeout);
+            this.pongTimeout = null;
+          }
+          return;
+        }
         if (msg.type) {
           this._emit(msg.type, msg);
         }
@@ -129,6 +148,7 @@ class ChatWebSocketService {
     this.ws.onclose = (event) => {
       console.log('[ChatWS] Closed:', event.code, event.reason);
       this.ws = null;
+      this._stopPing();
       if (!this.isIntentionallyClosed) {
         this._emit('_reconnecting');
         this._scheduleReconnect();
@@ -138,6 +158,61 @@ class ChatWebSocketService {
     this.ws.onerror = (event) => {
       console.error('[ChatWS] Error:', event);
     };
+  }
+
+  _onOnline() {
+    if (this.isIntentionallyClosed || !this.connectionParams) return;
+    // If we're already connected or reconnecting, do nothing
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) return;
+    if (this.reconnectTimer) return;
+
+    console.log('[ChatWS] Network online — triggering reconnect');
+    this.reconnectAttempts = 0;
+    this._scheduleReconnect();
+  }
+
+  _onVisibilityChange() {
+    if (document.visibilityState !== 'visible') return;
+    if (this.isIntentionallyClosed || !this.connectionParams) return;
+
+    // Check if the connection is still alive
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      if (!this.reconnectTimer) {
+        console.log('[ChatWS] Tab visible, connection lost — triggering reconnect');
+        this.reconnectAttempts = 0;
+        this._scheduleReconnect();
+      }
+    }
+  }
+
+  _startPing() {
+    this._stopPing();
+    this.pingTimer = setInterval(() => {
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+        this._stopPing();
+        return;
+      }
+      try {
+        this.ws.send(JSON.stringify({ type: 'PING' }));
+      } catch {
+        // send failed — onclose will handle reconnect
+      }
+      this.pongTimeout = setTimeout(() => {
+        console.warn('[ChatWS] Pong timeout — closing connection');
+        if (this.ws) this.ws.close();
+      }, 5000);
+    }, 30000);
+  }
+
+  _stopPing() {
+    if (this.pingTimer) {
+      clearInterval(this.pingTimer);
+      this.pingTimer = null;
+    }
+    if (this.pongTimeout) {
+      clearTimeout(this.pongTimeout);
+      this.pongTimeout = null;
+    }
   }
 
   _clearReconnectTimer() {

@@ -24,6 +24,7 @@
 </template>
 
 <script setup>
+import { onMounted, onBeforeUnmount } from 'vue';
 import { useSidebar } from '@/composables/useSidebar.js';
 import { useChatStore } from '@/stores/chat.js';
 import Sidebar from '@/components/Sidebar.vue';
@@ -34,4 +35,15 @@ import ChatConversation from './ChatConversation.vue';
 
 const { isSidebarOpen } = useSidebar();
 const chatStore = useChatStore();
+
+onMounted(() => {
+  chatStore.setChatPageVisible(true);
+  if (chatStore.activeChatId) {
+    chatStore.selectChat(chatStore.activeChatId);
+  }
+});
+
+onBeforeUnmount(() => {
+  chatStore.setChatPageVisible(false);
+});
 </script>
