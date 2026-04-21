@@ -241,6 +241,37 @@ class WarehouseService {
     }
   }
 
+  async getAiAnalytics(organizationId, filters = {}, signal) {
+    try {
+      const params = new URLSearchParams({ organizationId });
+
+      if (filters.from) params.append('from', filters.from);
+      if (filters.to) params.append('to', filters.to);
+      if (filters.itemVariantId) params.append('itemVariantId', filters.itemVariantId);
+      if (filters.fromPointOfStorageId) params.append('fromPointOfStorageId', filters.fromPointOfStorageId);
+      if (filters.toPointOfStorageId) params.append('toPointOfStorageId', filters.toPointOfStorageId);
+      if (filters.type) params.append('type', filters.type);
+
+      const response = await authFetch(`${this.baseUrl}/analytics/movements?${params}`, {
+        method: 'GET',
+        headers: await this.getAuthHeaders(),
+        signal
+      });
+
+      if (!response.ok) {
+        const error = new Error(`HTTP error! status: ${response.status}`);
+        error.status = response.status;
+        throw error;
+      }
+
+      return await response.json();
+    } catch (error) {
+      if (error.name === 'AbortError') throw error;
+      console.error('Ошибка при получении AI аналитики:', error);
+      throw error;
+    }
+  }
+
   async getItemVariantPointOfStorageCount(organizationId) {
     try {
       const response = await authFetch(`${this.baseUrl}/organizations/${organizationId}/counts`, {
