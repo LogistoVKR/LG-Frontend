@@ -37,6 +37,9 @@
                 Телефон
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Скидка
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Действия
               </th>
             </tr>
@@ -55,10 +58,13 @@
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm text-gray-900">{{ client.phoneNumber || 'Не указано' }}</div>
               </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900">{{ client.personalDiscount != null ? client.personalDiscount + '%' : 'Не задана' }}</div>
+              </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <div class="flex items-center space-x-2">
                   <button
-                    v-if="canManageClients"
+                    v-if="canEditClients"
                     @click="$emit('edit', client)"
                     class="text-blue-600 hover:text-blue-900 transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -114,6 +120,10 @@ defineProps({
   canManageClients: {
     type: Boolean,
     required: true
+  },
+  canEditClients: {
+    type: Boolean,
+    default: false
   }
 });
 

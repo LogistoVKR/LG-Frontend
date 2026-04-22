@@ -83,6 +83,7 @@
               :loading="loading"
               :error="error"
               :canManageClients="canManageClients"
+              :canEditClients="canEditClients"
               @edit="editClient"
               @delete="deleteClient"
               @create="showCreateModal = true"
@@ -200,6 +201,25 @@
                 placeholder="Введите телефон клиента"
                 maxlength="15">
             </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Персональная скидка (%)
+              </label>
+              <input
+                v-model.number="form.personalDiscount"
+                type="number"
+                min="0"
+                max="100"
+                step="0.01"
+                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                :class="validationErrors.personalDiscount ? 'border-red-500' : 'border-gray-300'"
+                placeholder="Не задана"
+                @input="delete validationErrors.personalDiscount">
+              <p v-if="validationErrors.personalDiscount" class="mt-1 text-sm text-red-600">
+                {{ validationErrors.personalDiscount }}
+              </p>
+            </div>
           </div>
           
           <div class="flex justify-end space-x-3 mt-6">
@@ -272,6 +292,11 @@ const canManageClients = computed(() => {
   return role === 'ADMIN' || role === 'OWNER';
 });
 
+const canEditClients = computed(() => {
+  const role = organizationsStore.selectedOrganization?.role;
+  return role === 'ADMIN' || role === 'OWNER' || role === 'WAREHOUSE_MANAGER';
+});
+
 // State
 const loading = ref(false);
 const error = ref(null);
@@ -306,8 +331,30 @@ const form = ref({
   middleName: '',
   dateOfBirth: '',
   email: '',
-  phoneNumber: ''
+  phoneNumber: '',
+  personalDiscount: null
 });
+
+// Validation
+const validationErrors = ref({});
+
+function validatePersonalDiscount(value) {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+  const num = Number(value);
+  if (isNaN(num)) {
+    return 'Введите числовое значение';
+  }
+  if (num < 0 || num > 100) {
+    return 'Значение должно быть от 0 до 100';
+  }
+  const parts = String(value).split('.');
+  if (parts[1] && parts[1].length > 2) {
+    return 'Максимум 2 знака после запятой';
+  }
+  return null;
+}
 
 const showProfileMenu = ref(false);
 
@@ -382,8 +429,10 @@ const editClient = (client) => {
     dateOfBirth: client.dateOfBirth || '',
     email: client.email || '',
     phoneNumber: client.phoneNumber || '',
+    personalDiscount: client.personalDiscount ?? null,
     id: client.id
   };
+  validationErrors.value = {};
   showEditModal.value = true;
 };
 
@@ -414,6 +463,13 @@ const confirmDelete = async () => {
 };
 
 const handleSubmit = async () => {
+  const discountError = validatePersonalDiscount(form.value.personalDiscount);
+  if (discountError) {
+    validationErrors.value.personalDiscount = discountError;
+    return;
+  }
+  validationErrors.value = {};
+
   submitting.value = true;
   try {
     const orgId = organizationsStore.selectedOrganizationId;
@@ -445,8 +501,10 @@ const closeModal = () => {
     middleName: '',
     dateOfBirth: '',
     email: '',
-    phoneNumber: ''
+    phoneNumber: '',
+    personalDiscount: null
   };
+  validationErrors.value = {};
   clientToDelete.value = null;
 };
 

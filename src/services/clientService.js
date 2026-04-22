@@ -42,7 +42,7 @@ class ClientService {
 
   async createClient(organizationId, data, token) {
     // Формируем тело запроса согласно требованиям
-    const body = JSON.stringify({
+    const payload = {
       firstName: data.firstName,
       lastName: data.lastName,
       middleName: data.middleName,
@@ -50,7 +50,11 @@ class ClientService {
       email: data.email,
       phoneNumber: data.phoneNumber,
       organizationId: organizationId // обязательно
-    });
+    };
+    if (data.personalDiscount !== null && data.personalDiscount !== undefined && data.personalDiscount !== '') {
+      payload.personalDiscount = Number(data.personalDiscount);
+    }
+    const body = JSON.stringify(payload);
     const response = await authFetch(`${this.baseUrl}/clients`, {
       method: 'POST',
       headers: this.getAuthHeaders(token),
@@ -64,14 +68,18 @@ class ClientService {
 
   async updateClient(organizationId, clientId, data, token) {
     // Формируем тело запроса согласно требованиям
-    const body = JSON.stringify({
+    const payload = {
       firstName: data.firstName,
       lastName: data.lastName,
       middleName: data.middleName,
       dateOfBirth: data.dateOfBirth,
       email: data.email,
       phoneNumber: data.phoneNumber // не обязательный
-    });
+    };
+    if (data.personalDiscount !== null && data.personalDiscount !== undefined && data.personalDiscount !== '') {
+      payload.personalDiscount = Number(data.personalDiscount);
+    }
+    const body = JSON.stringify(payload);
     const response = await authFetch(`${this.baseUrl}/clients/${clientId}`, {
       method: 'PUT',
       headers: this.getAuthHeaders(token),
