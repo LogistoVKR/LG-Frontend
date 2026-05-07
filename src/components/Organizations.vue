@@ -86,6 +86,9 @@
                         Роль
                       </th>
                       <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Интеграция Ozon
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Действия
                       </th>
                     </tr>
@@ -109,6 +112,13 @@
                         <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
                               :class="getRoleBadgeClass(org.role)">
                           {{ getRoleDisplayName(org.role) }}
+                        </span>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <span
+                          class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                          :class="org.hasOzonIntegration ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'">
+                          {{ org.hasOzonIntegration ? 'Подключено' : 'Не подключено' }}
                         </span>
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
