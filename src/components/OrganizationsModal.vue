@@ -35,6 +35,16 @@
           </div>
 
           <div v-if="canManageOzonKey">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Client ID Ozon</label>
+            <input
+              v-model="form.ozonClientId"
+              type="text"
+              maxlength="255"
+              placeholder="Введите Client ID Ozon"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+
+          <div v-if="canManageOzonKey">
             <label class="block text-sm font-medium text-gray-700 mb-1">API ключ Ozon</label>
             <div class="flex items-center space-x-2">
               <input
@@ -113,6 +123,7 @@ const deletingKey = ref(false);
 const form = reactive({
   name: '',
   description: '',
+  ozonClientId: '',
   ozonApiKey: ''
 });
 
@@ -133,6 +144,7 @@ const closeModal = () => {
 const resetForm = () => {
   form.name = '';
   form.description = '';
+  form.ozonClientId = '';
   form.ozonApiKey = '';
 };
 
@@ -149,8 +161,11 @@ const saveOrganization = async () => {
       name: form.name,
       description: form.description
     };
-    if (canManageOzonKey.value && form.ozonApiKey.trim() !== '') {
-      payload.ozonApiKey = form.ozonApiKey;
+    if (canManageOzonKey.value) {
+      payload.ozonClientId = form.ozonClientId.trim();
+      if (form.ozonApiKey.trim() !== '') {
+        payload.ozonApiKey = form.ozonApiKey;
+      }
     }
 
     let result;
@@ -204,6 +219,7 @@ watch(() => props.isOpen, (newValue) => {
     if (props.editingOrganization) {
       form.name = props.editingOrganization.name || '';
       form.description = props.editingOrganization.description || '';
+      form.ozonClientId = props.editingOrganization.ozonClientId || '';
       form.ozonApiKey = '';
     } else {
       resetForm();
