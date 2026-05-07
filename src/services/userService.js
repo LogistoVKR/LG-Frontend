@@ -94,6 +94,24 @@ class UserService {
     }
   }
 
+  async deleteOzonApiKey(id, token) {
+    try {
+      const response = await authFetch(`${this.baseUrl}/organizations/${id}/ozon-api-key`, {
+        method: 'DELETE',
+        headers: this.getAuthHeaders(token)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Ошибка при удалении интеграции Ozon:', error);
+      throw error;
+    }
+  }
+
   async getUsersByOrganizationId(organizationId, page = 0, size = 20, token, username = null, firstName = null, lastName = null, or = false) {
     try {
       const params = new URLSearchParams({
