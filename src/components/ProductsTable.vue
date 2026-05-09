@@ -19,29 +19,41 @@
     </div>
 
     <!-- Table -->
-    <div v-else class="bg-white rounded-lg shadow-sm overflow-hidden">
-      <div v-if="products.content && products.content.length > 0" class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
+    <div v-else class="bg-white rounded-lg shadow-sm">
+      <div v-if="products.content && products.content.length > 0">
+        <table class="w-full divide-y divide-gray-200 table-fixed">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Название</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Описание</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Действия</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/3">Название</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/2">Описание</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">Действия</th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
             <template v-for="product in (products.content || []).filter(p => p && p.id)" :key="product.id">
               <tr class="hover:bg-gray-50">
-                <td class="px-6 py-4 whitespace-nowrap flex items-center">
-                  <button @click="$emit('toggle-expand', product.id)" class="mr-2 focus:outline-none">
-                    <svg :class="{'transform rotate-90': expandedProductIds.includes(product.id)}" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                  <div class="text-sm font-medium text-gray-900">{{ product.name }}</div>
+                <td class="px-6 py-4">
+                  <div class="flex items-center min-w-0">
+                    <button @click="$emit('toggle-expand', product.id)" class="mr-2 flex-shrink-0 focus:outline-none">
+                      <svg :class="{'transform rotate-90': expandedProductIds.includes(product.id)}" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                    <div class="relative group min-w-0">
+                      <div class="text-sm font-medium text-gray-900 truncate">{{ truncate(product.name) }}</div>
+                      <div v-if="product.name && product.name.length > 35" class="absolute z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bottom-full left-0 mb-1 px-2 py-1.5 bg-gray-800/75 text-white text-xs rounded-lg shadow-lg whitespace-normal w-max max-w-xs pointer-events-none">
+                        {{ product.name }}
+                      </div>
+                    </div>
+                  </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-900">{{ product.description || '—' }}</div>
+                <td class="px-6 py-4">
+                  <div class="relative group">
+                    <div class="text-sm text-gray-900 truncate">{{ truncate(product.description) || '—' }}</div>
+                    <div v-if="product.description && product.description.length > 35" class="absolute z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bottom-full left-0 mb-1 px-2 py-1.5 bg-gray-800/75 text-white text-xs rounded-lg shadow-lg whitespace-normal w-max max-w-xs pointer-events-none">
+                      {{ product.description }}
+                    </div>
+                  </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div class="flex items-center space-x-2">
@@ -120,6 +132,12 @@
 
 <script setup>
 import VariantTable from '@/components/VariantTable.vue';
+
+function truncate(text, len = 35) {
+  if (!text) return '';
+  return text.length > len ? text.slice(0, len) + '...' : text;
+}
+
 defineProps({
   products: { type: Object, required: true },
   loading: Boolean,

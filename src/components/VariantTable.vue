@@ -13,15 +13,15 @@
       </div>
       <div v-else-if="error" class="text-red-500 py-2">{{ error }}</div>
       <div v-else>
-        <table class="min-w-full divide-y divide-gray-200" style="margin:0;">
+        <table class="w-full divide-y divide-gray-200 table-fixed" style="margin:0;">
           <thead>
             <tr>
-              <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase">SKU</th>
-              <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase">Штрихкод</th>
-              <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase">Цена</th>
-              <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase">Валюта</th>
-              <th class="px-2 py-1 text-center text-xs font-medium text-gray-500 uppercase">Наличие</th>
-              <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase">Действия</th>
+              <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase w-1/4">SKU</th>
+              <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase w-1/4">Штрихкод</th>
+              <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase w-20">Цена</th>
+              <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase w-20">Валюта</th>
+              <th class="px-2 py-1 text-center text-xs font-medium text-gray-500 uppercase w-20">Наличие</th>
+              <th class="px-2 py-1 text-center text-xs font-medium text-gray-500 uppercase w-16">Действия</th>
             </tr>
           </thead>
           <tbody>
@@ -30,10 +30,20 @@
             </tr>
             <tr v-for="variant in variants" :key="variant.id" @click="canManageVariants && !variant.isEditing ? startEditVariant(variant) : null" :class="{ 'cursor-pointer': canManageVariants && !variant.isEditing }">
               <td class="px-2 py-1 text-sm">
-                <input v-model="variant.editSku" @input="onVariantEdit(variant)" :readonly="!variant.isEditing || !canManageVariants" class="w-full bg-transparent border-none focus:ring-0 p-0 m-0" />
+                <div class="relative group">
+                  <input v-model="variant.editSku" @input="onVariantEdit(variant)" :readonly="!variant.isEditing || !canManageVariants" class="w-full bg-transparent border-none focus:ring-0 p-0 m-0 truncate" />
+                  <div v-if="!variant.isEditing && variant.editSku && variant.editSku.length > 35" class="absolute z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bottom-full left-0 mb-1 px-2 py-1.5 bg-gray-800/75 text-white text-xs rounded-lg shadow-lg whitespace-normal w-max max-w-xs pointer-events-none">
+                    {{ variant.editSku }}
+                  </div>
+                </div>
               </td>
               <td class="px-2 py-1 text-sm">
-                <input v-model="variant.editBarcode" @input="onVariantEdit(variant)" :readonly="!variant.isEditing || !canManageVariants" class="w-full bg-transparent border-none focus:ring-0 p-0 m-0" />
+                <div class="relative group">
+                  <input v-model="variant.editBarcode" @input="onVariantEdit(variant)" :readonly="!variant.isEditing || !canManageVariants" class="w-full bg-transparent border-none focus:ring-0 p-0 m-0 truncate" />
+                  <div v-if="!variant.isEditing && variant.editBarcode && variant.editBarcode.length > 35" class="absolute z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bottom-full left-0 mb-1 px-2 py-1.5 bg-gray-800/75 text-white text-xs rounded-lg shadow-lg whitespace-normal w-max max-w-xs pointer-events-none">
+                    {{ variant.editBarcode }}
+                  </div>
+                </div>
               </td>
               <td class="px-2 py-1 text-sm">
                 <input v-model.number="variant.editPrice" @input="onVariantEdit(variant)" :readonly="!variant.isEditing || !canManageVariants" type="number" min="0" step="0.01" class="w-full bg-transparent border-none focus:ring-0 p-0 m-0" />
@@ -53,8 +63,8 @@
                   <span>Показать</span>
                 </button>
               </td>
-              <td class="px-2 py-1 text-right">
-                <div class="flex items-center justify-end space-x-1">
+              <td class="px-2 py-1 text-center">
+                <div class="flex items-center justify-center space-x-1">
                   <button v-if="variant.isEditing && canManageVariants && variant.isChanged" @click.stop="saveVariantEdit(variant)" class="text-blue-600 hover:text-blue-900 text-xs flex items-center justify-center">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <rect x="3" y="3" width="18" height="18" rx="2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
