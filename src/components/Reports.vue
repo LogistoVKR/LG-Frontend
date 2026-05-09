@@ -27,7 +27,7 @@
             />
             <div class="flex justify-between items-center mb-6">
               <div>
-                <h3 class="text-lg font-semibold text-gray-900">Аналитика перемещений</h3>
+                <h3 class="text-lg font-semibold text-gray-900">Общая аналитика</h3>
                 <p class="text-sm text-gray-600">Всего перемещений: {{ movements?.totalElements || 0 }}</p>
               </div>
             </div>
@@ -367,9 +367,112 @@
                   </div>
                 </div>
               </div>
+
+
+              <!-- Поступление товаров ожидают пользователи -->
+              <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center gap-3 mb-6">
+                  <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 class="text-lg font-semibold text-gray-900">Поступление этих товаров ожидают пользователи</h4>
+                    <p class="text-sm text-gray-500">Товары с активными подписками из Ozon</p>
+                  </div>
+                </div>
+
+                <div v-if="subscriptionsLoading" class="flex items-center justify-center py-16">
+                  <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mr-3"></div>
+                  <span class="text-gray-500 text-sm">Загрузка подписок...</span>
+                </div>
+
+                <div v-else-if="subscriptionsError" class="flex items-center gap-3 bg-red-50 border border-red-200 rounded-lg p-4">
+                  <svg class="w-5 h-5 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span class="text-red-700 text-sm">{{ subscriptionsError }}</span>
+                </div>
+
+                <div v-else-if="subscriptions.length === 0" class="flex flex-col items-center justify-center py-16 text-gray-400">
+                  <div class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <svg class="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                    </svg>
+                  </div>
+                  <p class="text-base font-medium text-gray-500">Нет товаров с активными подписками</p>
+                  <p class="text-sm text-gray-400 mt-1">Подписки появятся, когда пользователи ожидают поступления товаров</p>
+                </div>
+
+                <div v-else class="space-y-8">
+                  <div v-for="entry in subscriptions" :key="entry.item.id">
+                    <!-- Item header -->
+                    <div class="flex items-start justify-between mb-3">
+                      <div class="flex items-center gap-2 min-w-0">
+                        <span class="font-semibold text-gray-900 truncate">{{ entry.item.name }}</span>
+                        <span v-if="entry.item.ozonItem"
+                          class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-bold text-white bg-[#005BFF] flex-shrink-0">
+                          OZON
+                        </span>
+                      </div>
+                      <span class="flex-shrink-0 text-xs text-gray-400 ml-3 mt-0.5">
+                        {{ entry.variants.length }} {{ variantWord(entry.variants.length) }}
+                      </span>
+                    </div>
+                    <p v-if="entry.item.description" class="text-sm text-gray-500 -mt-2 mb-3 truncate">
+                      {{ entry.item.description }}
+                    </p>
+
+                    <!-- Variant cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                      <button
+                        v-for="v in entry.variants"
+                        :key="v.variant.id"
+                        @click="goToProductsBySku(v.variant.sku)"
+                        class="group relative bg-white border border-gray-200 rounded-xl p-4 text-left hover:border-blue-400 hover:shadow-md transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-300">
+
+                        <!-- Subscriber badge + navigation arrow -->
+                        <div class="flex items-start justify-between mb-3">
+                          <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-orange-50 border border-orange-200 text-orange-700 text-xs font-semibold leading-none">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                            {{ v.count }} ожидают
+                          </span>
+                          <svg class="w-4 h-4 text-gray-300 group-hover:text-blue-500 transition-colors flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                          </svg>
+                        </div>
+
+                        <!-- SKU + optional Ozon badge -->
+                        <div class="flex items-center gap-1.5 mb-2">
+                          <code class="text-sm font-semibold text-gray-800 bg-gray-100 px-2 py-0.5 rounded truncate max-w-full">{{ v.variant.sku }}</code>
+                          <span v-if="v.variant.ozonItem"
+                            class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-bold text-white bg-[#005BFF] flex-shrink-0">
+                            OZON
+                          </span>
+                        </div>
+
+                        <!-- Price -->
+                        <div v-if="v.variant.price" class="text-sm font-medium text-gray-700 mb-1.5">
+                          {{ formatCurrency(v.variant.price, getCurrencySymbol(v.variant.currency)) }}
+                        </div>
+
+                        <!-- Barcode -->
+                        <div v-if="v.variant.barcode" class="text-xs text-gray-400 font-mono truncate">
+                          {{ v.variant.barcode }}
+                        </div>
+                      </button>
+                    </div>
+
+                    <div v-if="subscriptions.indexOf(entry) < subscriptions.length - 1" class="mt-6 border-t border-gray-100"></div>
+                  </div>
+                </div>
+              </div>
             </div>
-            
-            
+
+
           </div>
           </div>
       </main>
@@ -382,6 +485,7 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
+import { useRouter } from 'vue-router';
 import Sidebar from './Sidebar.vue';
 import Header from './Header.vue';
 import Footer from './Footer.vue';
@@ -395,6 +499,7 @@ import 'chartjs-adapter-date-fns';
 
 const organizationsStore = useOrganizationsStore();
 const { isSidebarOpen } = useSidebar();
+const router = useRouter();
 
 // State
 const loading = ref(false);
@@ -461,6 +566,11 @@ const selectedSalesItem = ref(null);
 
 // Key для принудительного перерендеринга селектора товаров
 const salesSelectorKey = ref(0);
+
+// Subscriptions
+const subscriptions = ref([]);
+const subscriptionsLoading = ref(false);
+const subscriptionsError = ref(null);
 
 // Функция для конвертации локального времени в UTC для отправки на сервер
 function convertToUTC(dateTimeString) {
@@ -1022,6 +1132,32 @@ function updateSalesChart() {
 
 
 
+async function loadSubscriptions() {
+  if (!organizationsStore.selectedOrganization?.id) return;
+  subscriptionsLoading.value = true;
+  subscriptionsError.value = null;
+  try {
+    subscriptions.value = await warehouseService.getSubscriptions(
+      organizationsStore.selectedOrganization.id
+    );
+  } catch (e) {
+    subscriptionsError.value = e.message || 'Ошибка загрузки подписок';
+    subscriptions.value = [];
+  } finally {
+    subscriptionsLoading.value = false;
+  }
+}
+
+function goToProductsBySku(sku) {
+  router.push({ path: '/dashboard/products', query: { sku } });
+}
+
+function variantWord(count) {
+  if (count % 10 === 1 && count % 100 !== 11) return 'вариант';
+  if ([2, 3, 4].includes(count % 10) && ![12, 13, 14].includes(count % 100)) return 'варианта';
+  return 'вариантов';
+}
+
 function resetFilters() {
   filters.value = {
     from: getStartOfMonth(),
@@ -1093,6 +1229,7 @@ onMounted(() => {
   setTimeout(() => {
     if (organizationsStore.selectedOrganization?.id) {
       loadMovements();
+      loadSubscriptions();
     }
   }, 100);
 });
@@ -1108,7 +1245,7 @@ onBeforeUnmount(() => {
 watch(() => organizationsStore.selectedOrganizationId, (newVal, oldVal) => {
   if (newVal) {
     destroyCharts(); // Очищаем старые графики
-    
+
     // Если это смена организации (а не первичная загрузка), сбрасываем данные
     if (oldVal && oldVal !== newVal) {
       movements.value = null;
@@ -1116,8 +1253,9 @@ watch(() => organizationsStore.selectedOrganizationId, (newVal, oldVal) => {
       selectedSalesItem.value = null;
       salesSelectorKey.value++; // Принудительно перерендериваем селектор
     }
-    
+
     loadMovements();
+    loadSubscriptions();
   } else {
     destroyCharts();
     movements.value = null;
@@ -1135,6 +1273,8 @@ watch(() => organizationsStore.selectedOrganizationId, (newVal, oldVal) => {
     topProducts.value = [];
     selectedSalesItem.value = null;
     salesSelectorKey.value++;
+    subscriptions.value = [];
+    subscriptionsError.value = null;
   }
 }, { immediate: true });
 </script> 

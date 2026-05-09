@@ -272,6 +272,23 @@ class WarehouseService {
     }
   }
 
+  async getSubscriptions(organizationId) {
+    try {
+      const params = new URLSearchParams({ organizationId });
+      const response = await authFetch(`${this.baseUrl}/analytics/subscriptions?${params}`, {
+        method: 'GET',
+        headers: await this.getAuthHeaders()
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Ошибка при получении подписок:', error);
+      throw error;
+    }
+  }
+
   async getItemVariantPointOfStorageCount(organizationId) {
     try {
       const response = await authFetch(`${this.baseUrl}/organizations/${organizationId}/counts`, {

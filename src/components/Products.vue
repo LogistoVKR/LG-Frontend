@@ -182,6 +182,7 @@
 
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import Sidebar from '@/components/Sidebar.vue';
 import Header from '@/components/Header.vue';
 import Footer from '@/components/Footer.vue';
@@ -195,6 +196,7 @@ import VariantTable from '@/components/VariantTable.vue';
 const organizationsStore = useOrganizationsStore();
 const { isAdmin, isOwner, isMember, isWarehouseManager } = useAuth();
 const { isSidebarOpen } = useSidebar();
+const route = useRoute();
 const canManageItems = computed(() => {
   const role = organizationsStore.selectedOrganization?.role;
   return role === 'ADMIN' || role === 'OWNER';
@@ -409,6 +411,9 @@ const loadCurrencies = async () => {
 
 // Lifecycle
 onMounted(() => {
+  if (route.query.sku) {
+    filters.value.sku = route.query.sku;
+  }
   loadProducts();
   loadCurrencies();
 });
