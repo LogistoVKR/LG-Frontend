@@ -25,38 +25,38 @@ const routes = [
     { path: '/contact', component: Contact },
     { path: '/legal', component: Legal },
 
-    { 
-        path: '/dashboard', 
+    {
+        path: '/dashboard',
         component: Dashboard,
         meta: { requiresAuth: true }
     },
-    { 
-        path: '/dashboard/warehouses', 
+    {
+        path: '/dashboard/warehouses',
         component: Warehouses,
         meta: { requiresAuth: true }
     },
-    { 
-        path: '/dashboard/users', 
+    {
+        path: '/dashboard/users',
         component: Users,
         meta: { requiresAuth: true }
     },
-    { 
-        path: '/dashboard/organizations', 
+    {
+        path: '/dashboard/organizations',
         component: Organizations,
         meta: { requiresAuth: true }
     },
-    { 
-        path: '/dashboard/products', 
+    {
+        path: '/dashboard/products',
         component: Products,
         meta: { requiresAuth: true }
     },
-    { 
-        path: '/dashboard/movements', 
+    {
+        path: '/dashboard/movements',
         component: ItemMovements,
         meta: { requiresAuth: true }
     },
-    { 
-        path: '/dashboard/clients', 
+    {
+        path: '/dashboard/clients',
         component: Clients,
         meta: { requiresAuth: true }
     },
@@ -71,7 +71,7 @@ const routes = [
         meta: { requiresAuth: true }
     },
     { path: '/my-plan', component: MyPlan },
-    // Catch-all маршрут для несуществующих страниц
+
     { path: '/:pathMatch(.*)*', redirect: '/' }
 ];
 
@@ -79,55 +79,53 @@ const router = createRouter({
     history: createWebHistory(),
     routes,
     scrollBehavior(to, from, savedPosition) {
-        // Если есть сохраненная позиция (например, при использовании кнопки "Назад")
+
         if (savedPosition) {
             return savedPosition;
         }
-        // Всегда скроллить к началу страницы при переходе на новую страницу
+
         return { top: 0, behavior: 'smooth' };
     }
 });
 
-// Защита маршрутов и автоматическое перенаправление
+
 router.beforeEach(async (to, from, next) => {
-    console.log('🔍 Router guard triggered:', { 
-        to: to.path, 
+    console.log('🔍 Router guard triggered:', {
+        to: to.path,
         from: from.path,
         timestamp: new Date().toISOString()
     });
-    
+
     const { isAuthenticated, isLoading } = useAuth();
-    
-    // Для публичных страниц не ждем аутентификацию - пускаем сразу!
+
+
     if (!to.meta.requiresAuth) {
         console.log('✅ Public route - allowing immediate access');
         next();
         return;
     }
-    
-    // Только для защищенных страниц ждем аутентификацию
+
+
     if (isLoading.value) {
         console.log('⏳ Auth still loading for protected route, redirecting to home...');
         next('/');
         return;
     }
-    
-    console.log('📊 Auth state:', { 
-        isAuthenticated: isAuthenticated.value, 
+
+    console.log('📊 Auth state:', {
+        isAuthenticated: isAuthenticated.value,
         path: to.path,
         requiresAuth: to.meta.requiresAuth
     });
-    
-    // Если пользователь авторизован и пытается зайти на главную страницу, перенаправляем на dashboard
+
+
     if (to.path === '/' && isAuthenticated.value) {
         console.log('🔄 Redirecting authenticated user to dashboard');
         next('/dashboard');
         return;
     }
-    
 
 
-    // Если мы дошли до сюда, значит это защищенный маршрут и auth загружен
     if (isAuthenticated.value) {
         console.log('✅ User authenticated, allowing access to protected route');
         next();
@@ -137,7 +135,7 @@ router.beforeEach(async (to, from, next) => {
     }
 });
 
-// Auto-connect employee chat WebSocket on dashboard pages
+
 router.afterEach((to) => {
     if (to.path.startsWith('/dashboard')) {
         const { isAuthenticated } = useAuth();

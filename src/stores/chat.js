@@ -14,11 +14,11 @@ function safeDecodeURI(str) {
 }
 
 export const useChatStore = defineStore('chat', () => {
-  // --- Connection state ---
-  const connectionStatus = ref('disconnected'); // 'connecting'|'connected'|'disconnected'|'reconnecting'|'failed'
-  const mode = ref(null); // 'anonymous' | 'employee'
 
-  // --- Anonymous state ---
+  const connectionStatus = ref('disconnected');
+  const mode = ref(null);
+
+
   const anonymousId = ref(localStorage.getItem('logisto_chat_anonymousId') || null);
   const anonymousChatSessionId = ref(null);
   const anonymousMessages = ref([]);
@@ -28,7 +28,7 @@ export const useChatStore = defineStore('chat', () => {
   const anonymousUserName = ref(localStorage.getItem('logisto_chat_userName') || null);
   const anonymousChatClosed = ref(false);
 
-  // --- Employee state ---
+
   const chats = ref([]);
   const activeChatId = ref(null);
   const activeChatMessages = ref([]);
@@ -41,7 +41,7 @@ export const useChatStore = defineStore('chat', () => {
     return Object.values(unreadCounts.value).reduce((sum, n) => sum + n, 0);
   });
 
-  // --- Listeners registered flag ---
+
   let listenersRegistered = false;
 
   function _registerListeners() {
@@ -55,12 +55,12 @@ export const useChatStore = defineStore('chat', () => {
       const wasReconnecting = connectionStatus.value === 'reconnecting' || connectionStatus.value === 'failed';
       connectionStatus.value = 'connected';
 
-      // After reconnect — re-request data to recover missed messages
+
       if (wasReconnecting) {
         if (mode.value === 'employee') {
-          // Re-request chat list (server sends it on connect, but just in case)
+
           chatWebSocket.send({ type: 'LIST_CHATS' });
-          // Re-request active chat history
+
           if (activeChatId.value) {
             chatWebSocket.send({ type: 'LOAD_HISTORY', chatSessionId: activeChatId.value });
           }
@@ -87,9 +87,6 @@ export const useChatStore = defineStore('chat', () => {
     chatWebSocket.on('ERROR', _onError);
   }
 
-  // ========================
-  // Anonymous actions
-  // ========================
 
   function openAnonymousChat(organizationId, orgName) {
     anonymousOrgId.value = organizationId;
@@ -104,13 +101,13 @@ export const useChatStore = defineStore('chat', () => {
   function connectAnonymousChat(userName) {
     if (!anonymousOrgId.value) return;
 
-    // Save/generate anonymousId
+
     if (!anonymousId.value) {
       anonymousId.value = crypto.randomUUID();
       localStorage.setItem('logisto_chat_anonymousId', anonymousId.value);
     }
 
-    // Save user name
+
     anonymousUserName.value = userName || null;
     if (userName) {
       localStorage.setItem('logisto_chat_userName', userName);
@@ -130,7 +127,7 @@ export const useChatStore = defineStore('chat', () => {
     if (!content.trim()) return;
     const sent = chatWebSocket.send({ type: 'SEND_MESSAGE', content });
     if (sent) {
-      // Add locally (server doesn't echo back to anonymous sender)
+
       anonymousMessages.value.push({
         content,
         senderName: anonymousUserName.value || 'Вы',
@@ -156,9 +153,6 @@ export const useChatStore = defineStore('chat', () => {
     chatError.value = null;
   }
 
-  // ========================
-  // Employee actions
-  // ========================
 
   async function initEmployeeConnection() {
     const { getToken } = useAuth();
@@ -182,18 +176,18 @@ export const useChatStore = defineStore('chat', () => {
     activeChatClosed.value = false;
     chatError.value = null;
 
-    // Reset unread for this chat
+
     if (unreadCounts.value[chatId]) {
       unreadCounts.value[chatId] = 0;
     }
 
-    // Load history
+
     chatWebSocket.send({ type: 'LOAD_HISTORY', chatSessionId: chatId });
   }
 
   function sendEmployeeMessage(content) {
     if (!content.trim() || !activeChatId.value) return;
-    // Don't add optimistically — wait for server echo
+
     chatWebSocket.send({
       type: 'SEND_MESSAGE',
       chatSessionId: activeChatId.value,
@@ -228,15 +222,12 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
-  // ========================
-  // WS event handlers
-  // ========================
 
   function _onChatCreated(msg) {
     if (mode.value === 'anonymous') {
       anonymousChatSessionId.value = msg.chatSessionId;
     } else if (mode.value === 'employee') {
-      // A new chat appeared — add a placeholder to the chat list
+
       const exists = chats.value.find(c => c.id === msg.chatSessionId);
       if (!exists) {
         const data = msg.data || {};
@@ -255,7 +246,7 @@ export const useChatStore = defineStore('chat', () => {
 
   function _onNewMessage(msg) {
     if (mode.value === 'anonymous') {
-      // Only add if it's from the other side (employee)
+
       anonymousMessages.value.push({
         content: msg.content,
         senderName: safeDecodeURI(msg.senderName),
@@ -265,7 +256,7 @@ export const useChatStore = defineStore('chat', () => {
     } else if (mode.value === 'employee') {
       const chatId = msg.chatSessionId;
 
-      // Update last message in chat list
+
       const chat = chats.value.find(c => c.id === chatId);
       if (chat) {
         chat.lastMessage = msg.content;
@@ -273,16 +264,16 @@ export const useChatStore = defineStore('chat', () => {
       }
 
       if (chatId === activeChatId.value && isChatPageVisible.value) {
-        // Active chat — show in conversation
+
         activeChatMessages.value.push({
           content: msg.content,
           senderName: safeDecodeURI(msg.senderName),
-          senderType: null, // We don't get senderType in NEW_MESSAGE
-          isOwn: false, // Will be styled by senderName comparison or left as-is
+          senderType: null,
+          isOwn: false,
           timestamp: new Date().toISOString(),
         });
       } else {
-        // Not the active chat — increment unread
+
         unreadCounts.value[chatId] = (unreadCounts.value[chatId] || 0) + 1;
       }
     }
@@ -292,7 +283,7 @@ export const useChatStore = defineStore('chat', () => {
     if (mode.value === 'anonymous') {
       anonymousChatClosed.value = true;
     } else if (mode.value === 'employee') {
-      // Remove from active chats
+
       chats.value = chats.value.filter(c => c.id !== msg.chatSessionId);
       delete unreadCounts.value[msg.chatSessionId];
 
@@ -343,9 +334,6 @@ export const useChatStore = defineStore('chat', () => {
     chatError.value = msg.content;
   }
 
-  // ========================
-  // Org switch watcher
-  // ========================
 
   const organizationsStore = useOrganizationsStore();
   let previousOrgId = organizationsStore.selectedOrganizationId;
@@ -363,11 +351,11 @@ export const useChatStore = defineStore('chat', () => {
   );
 
   return {
-    // Connection
+
     connectionStatus,
     mode,
 
-    // Anonymous
+
     anonymousId,
     anonymousChatSessionId,
     anonymousMessages,
@@ -377,7 +365,7 @@ export const useChatStore = defineStore('chat', () => {
     anonymousUserName,
     anonymousChatClosed,
 
-    // Employee
+
     chats,
     activeChatId,
     activeChatMessages,
@@ -387,14 +375,14 @@ export const useChatStore = defineStore('chat', () => {
     isChatPageVisible,
     chatError,
 
-    // Anonymous actions
+
     openAnonymousChat,
     connectAnonymousChat,
     sendAnonymousMessage,
     closeAnonymousChat,
     disconnectAnonymous,
 
-    // Employee actions
+
     initEmployeeConnection,
     selectChat,
     sendEmployeeMessage,
@@ -402,7 +390,7 @@ export const useChatStore = defineStore('chat', () => {
     disconnectEmployee,
     setChatPageVisible,
 
-    // Shared
+
     manualReconnect,
   };
 });

@@ -1,6 +1,6 @@
 <template>
   <div ref="containerRef" class="flex-1 overflow-y-auto p-4 space-y-3">
-    <div v-if="messages.length === 0" class="flex items-center justify-center h-full text-gray-400 text-sm">
+    <div v-if="messages.length === 0" class="flex items-center justify-center h-full body-s text-ink-3">
       Нет сообщений
     </div>
     <div
@@ -10,24 +10,19 @@
       :class="msg.isOwn ? 'justify-end' : 'justify-start'"
     >
       <div class="max-w-[75%]">
-        <p
-          v-if="!msg.isOwn && msg.senderName"
-          class="text-xs text-gray-500 mb-0.5 px-1"
-        >
+        <p v-if="!msg.isOwn && msg.senderName" class="body-s text-ink-3 mb-0.5 px-1">
           {{ msg.senderName }}
         </p>
         <div
-          class="px-3 py-2 text-sm whitespace-pre-wrap break-words"
+          class="px-3 py-2 body-s whitespace-pre-wrap break-words"
           :class="msg.isOwn
-            ? 'bg-blue-600 text-white rounded-2xl rounded-br-sm'
-            : 'bg-gray-100 text-gray-900 rounded-2xl rounded-bl-sm'"
+            ? 'rounded-2xl rounded-br-sm text-[var(--accent-on)]'
+            : 'bg-surface-2 text-ink rounded-2xl rounded-bl-sm'"
+          :style="msg.isOwn ? 'background: var(--accent);' : ''"
         >
           {{ msg.content }}
         </div>
-        <p
-          class="text-xs mt-0.5 px-1"
-          :class="msg.isOwn ? 'text-right text-gray-400' : 'text-gray-400'"
-        >
+        <p class="body-s mt-0.5 px-1 text-ink-3" :class="msg.isOwn ? 'text-right' : ''">
           {{ formatTime(msg.timestamp) }}
         </p>
       </div>

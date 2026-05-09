@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="min-h-screen bg-paper">
     <Sidebar />
     <div class="flex flex-col min-h-screen transition-all duration-300" :class="isSidebarOpen ? 'ml-64' : 'ml-0'">
       <Header />
@@ -7,81 +7,58 @@
         <div class="max-w-7xl mx-auto">
           <div v-if="loading" class="flex items-center justify-center py-12">
             <div class="text-center">
-              <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p class="text-gray-600">Загрузка перемещений...</p>
+              <div class="animate-spin rounded-full h-10 w-10 border-b-2 mx-auto mb-4" style="border-color: var(--accent);"></div>
+              <p class="body-s text-ink-2">Загрузка перемещений...</p>
             </div>
           </div>
-          <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
-            <div class="flex items-center">
-              <svg class="w-5 h-5 text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <div v-else-if="error" class="bg-danger-soft border border-danger rounded-[var(--r-3)] p-4 mb-4">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-danger shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span class="text-red-800">{{ error }}</span>
+              <span class="body-s text-danger">{{ error }}</span>
             </div>
           </div>
           <div v-else>
-            <div class="flex justify-between items-center mb-6">
+            <div class="flex justify-between items-center mb-5">
               <div>
-                <h3 class="text-lg font-semibold text-gray-900">Перемещения товаров</h3>
-                <p class="text-sm text-gray-600">Всего: {{ movements?.totalElements || 0 }}</p>
+                <h3 class="h3 text-ink">Перемещения товаров</h3>
+                <p class="body-s text-ink-3 mt-0.5">Всего: {{ movements?.totalElements || 0 }}</p>
               </div>
-              <button
-                v-if="canEdit"
-                @click="openCreateModal"
-                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              <button v-if="canEdit" @click="openCreateModal" class="btn btn-primary gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
-                <span>Создать перемещение</span>
+                Создать перемещение
               </button>
             </div>
-            
-            <!-- Фильтры -->
-            <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+
+<div class="bg-surface rounded-[var(--r-3)] p-5 mb-5" style="box-shadow: var(--shadow-1);">
               <div class="flex items-center justify-between mb-4">
-                <h4 class="text-md font-medium text-gray-900">Фильтры</h4>
-                <div class="flex items-center space-x-3">
-                  <div v-if="tableLoading" class="flex items-center text-sm text-gray-500">
-                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                <span class="h3 text-ink">Фильтры</span>
+                <div class="flex items-center gap-3">
+                  <div v-if="tableLoading" class="flex items-center gap-2 body-s text-ink-3">
+                    <div class="animate-spin rounded-full h-3.5 w-3.5 border-b-2" style="border-color: var(--accent);"></div>
                     Поиск...
                   </div>
-                  <button
-                    @click="resetFilters"
-                    class="text-sm text-gray-500 hover:text-gray-700 transition-colors">
+                  <button @click="resetFilters" class="btn btn-ghost btn-sm text-ink-3 hover:text-ink">
                     Сбросить все
                   </button>
                 </div>
               </div>
-              
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Откуда -->
+
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Откуда</label>
-                  <WarehouseSelector
-                    v-model="filters.fromPointOfStorageId"
-                    placeholder="Все склады"
-                    @select="applyFilters"
-                    @update:modelValue="handleFromWarehouseChange"
-                    :error="false"
-                  />
+                  <label class="caption block mb-1">Откуда</label>
+                  <WarehouseSelector v-model="filters.fromPointOfStorageId" placeholder="Все склады" @select="applyFilters" @update:modelValue="handleFromWarehouseChange" :error="false" />
                 </div>
-                
-                <!-- Куда -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Куда</label>
-                  <WarehouseSelector
-                    v-model="filters.toPointOfStorageId"
-                    placeholder="Все склады"
-                    @select="applyFilters"
-                    @update:modelValue="handleToWarehouseChange"
-                    :error="false"
-                  />
+                  <label class="caption block mb-1">Куда</label>
+                  <WarehouseSelector v-model="filters.toPointOfStorageId" placeholder="Все склады" @select="applyFilters" @update:modelValue="handleToWarehouseChange" :error="false" />
                 </div>
-                
-                <!-- Тип перемещения -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Тип</label>
-                  <select v-model="filters.type" @change="applyFilters" class="input">
+                  <label class="caption block mb-1">Тип</label>
+                  <select v-model="filters.type" @change="applyFilters" class="field">
                     <option value="">Все типы</option>
                     <option value="PURCHASE">Поступление</option>
                     <option value="SALE">Продажа</option>
@@ -91,114 +68,86 @@
                     <option value="RESERVE">Резервирование</option>
                   </select>
                 </div>
-                
-                <!-- Вариант товара -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Вариант товара</label>
-                  <ItemVariantSelector
-                    v-model="filters.itemVariantId"
-                    placeholder="Все варианты"
-                    @select="applyFilters"
-                    @update:modelValue="handleItemVariantChange"
-                    :error="false"
-                  />
+                  <label class="caption block mb-1">Вариант товара</label>
+                  <ItemVariantSelector v-model="filters.itemVariantId" placeholder="Все варианты" @select="applyFilters" @update:modelValue="handleItemVariantChange" :error="false" />
                 </div>
-                
-                <!-- Дата от -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Дата от</label>
-                  <input 
-                    v-model="filters.from" 
-                    type="datetime-local" 
-                    @change="applyFilters"
-                    class="input"
-                  />
+                  <label class="caption block mb-1">Дата от</label>
+                  <input v-model="filters.from" type="datetime-local" @change="applyFilters" class="field" />
                 </div>
-                
-                <!-- Дата до -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Дата до</label>
-                  <input 
-                    v-model="filters.to" 
-                    type="datetime-local" 
-                    @change="applyFilters"
-                    class="input"
-                  />
+                  <label class="caption block mb-1">Дата до</label>
+                  <input v-model="filters.to" type="datetime-local" @change="applyFilters" class="field" />
                 </div>
               </div>
             </div>
-            <div class="bg-white rounded-lg shadow-sm overflow-hidden relative">
-              <!-- Loading overlay для таблицы -->
-              <div v-if="tableLoading" class="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
+
+            <div class="bg-surface rounded-[var(--r-3)] overflow-hidden relative" style="box-shadow: var(--shadow-1);">
+<div v-if="tableLoading" class="absolute inset-0 bg-surface/80 flex items-center justify-center z-10">
                 <div class="text-center">
-                  <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-                  <p class="text-gray-600 text-sm">Загрузка данных...</p>
+                  <div class="animate-spin rounded-full h-7 w-7 border-b-2 mx-auto mb-2" style="border-color: var(--accent);"></div>
+                  <p class="body-s text-ink-2">Загрузка данных...</p>
                 </div>
               </div>
-              
-              <!-- Таблица данных -->
-              <div v-if="movements?.content?.length" class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                  <thead class="bg-gray-50">
-                    <tr>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100" @click="toggleSort">
-                        <div class="flex items-center space-x-1">
+
+<div v-if="movements?.content?.length" class="overflow-x-auto">
+                <table class="min-w-full">
+                  <thead>
+                    <tr class="border-b border-line">
+                      <th class="px-4 py-3 text-left overline cursor-pointer hover:bg-surface-2 transition-colors" @click="toggleSort">
+                        <div class="flex items-center gap-1">
                           <span>Дата</span>
-                          <svg v-if="sortOrder === 'desc'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg v-if="sortOrder === 'desc'" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                           </svg>
-                          <svg v-else-if="sortOrder === 'asc'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg v-else-if="sortOrder === 'asc'" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-                          </svg>
-                          <svg v-else class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
                           </svg>
                         </div>
                       </th>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Товар</th>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Откуда</th>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Куда</th>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Кол-во</th>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Цена</th>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Валюта</th>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Тип</th>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Причина</th>
-                      <th v-if="canEdit" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Действия</th>
+                      <th class="px-4 py-3 text-left overline">Товар</th>
+                      <th class="px-4 py-3 text-left overline">Откуда</th>
+                      <th class="px-4 py-3 text-left overline">Куда</th>
+                      <th class="px-4 py-3 text-left overline">Кол-во</th>
+                      <th class="px-4 py-3 text-left overline">Цена</th>
+                      <th class="px-4 py-3 text-left overline">Валюта</th>
+                      <th class="px-4 py-3 text-left overline">Тип</th>
+                      <th class="px-4 py-3 text-left overline">Причина</th>
+                      <th v-if="canEdit" class="px-4 py-3 text-left overline">Действия</th>
                     </tr>
                   </thead>
-                  <tbody class="bg-white divide-y divide-gray-200">
-                    <tr v-for="m in movements.content" :key="m.id">
-                      <td class="px-4 py-2 whitespace-nowrap">{{ formatDate(m.created) }}</td>
-                      <td class="px-4 py-2 whitespace-nowrap">{{ m.itemVariant?.sku || '-' }}</td>
-                      <td class="px-4 py-2 whitespace-nowrap">{{ m.fromPointOfStorage?.name || '-' }}</td>
-                      <td class="px-4 py-2 whitespace-nowrap">{{ m.toPointOfStorage?.name || '-' }}</td>
-                      <td class="px-4 py-2 whitespace-nowrap">{{ m.quantity }}</td>
-                      <td class="px-4 py-2 whitespace-nowrap">{{ m.pricePerItem }}</td>
-                      <td class="px-4 py-2 whitespace-nowrap">{{ m.currency }}</td>
-                      <td class="px-4 py-2 whitespace-nowrap">{{ getMovementTypeName(m.type) }}</td>
-                      <td class="px-4 py-2 whitespace-nowrap">
+                  <tbody>
+                    <tr v-for="m in movements.content" :key="m.id" class="border-b border-line-2 hover:bg-surface-2 transition-colors">
+                      <td class="px-4 py-2.5 whitespace-nowrap body-s text-ink-2 mono">{{ formatDate(m.created) }}</td>
+                      <td class="px-4 py-2.5 whitespace-nowrap body-s text-ink mono">{{ m.itemVariant?.sku || '—' }}</td>
+                      <td class="px-4 py-2.5 whitespace-nowrap body-s text-ink-2">{{ m.fromPointOfStorage?.name || '—' }}</td>
+                      <td class="px-4 py-2.5 whitespace-nowrap body-s text-ink-2">{{ m.toPointOfStorage?.name || '—' }}</td>
+                      <td class="px-4 py-2.5 whitespace-nowrap body-s text-ink mono">{{ m.quantity }}</td>
+                      <td class="px-4 py-2.5 whitespace-nowrap body-s text-ink mono">{{ m.pricePerItem }}</td>
+                      <td class="px-4 py-2.5 whitespace-nowrap body-s text-ink-2">{{ m.currency || '—' }}</td>
+                      <td class="px-4 py-2.5 whitespace-nowrap">
+                        <span :class="getMovementBadgeClass(m.type)" class="badge">{{ getMovementTypeName(m.type) }}</span>
+                      </td>
+                      <td class="px-4 py-2.5 whitespace-nowrap body-s text-ink-2">
                         <span v-if="m.reason" class="relative group cursor-pointer">
                           {{ m.reason.length > 5 ? m.reason.substring(0, 5) + '...' : m.reason }}
-                          <span v-if="m.reason.length > 5" class="absolute left-1/2 z-50 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-pre-line shadow-lg max-w-xs break-words text-left">
+                          <span v-if="m.reason.length > 5" class="absolute left-1/2 z-50 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block bg-ink/80 text-[var(--ink-on-dark)] text-xs rounded-[var(--r-2)] px-2 py-1 whitespace-pre-line max-w-xs break-words text-left" style="box-shadow: var(--shadow-2);">
                             {{ m.reason }}
                           </span>
                         </span>
-                        <span v-else>-</span>
+                        <span v-else>—</span>
                       </td>
-                      <td v-if="canEdit" class="px-4 py-2 whitespace-nowrap text-sm font-medium">
-                        <div class="flex items-center space-x-2">
-                          <button
-                            @click="editMovement(m)"
-                            class="text-blue-600 hover:text-blue-900 transition-colors">
+                      <td v-if="canEdit" class="px-4 py-2.5 whitespace-nowrap">
+                        <div class="flex items-center gap-2">
+                          <button @click="editMovement(m)" class="text-ink-3 hover:text-accent transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
                           </button>
-                          <button
-                            @click="deleteMovement(m.id)"
-                            class="text-red-600 hover:text-red-900 transition-colors">
+                          <button @click="deleteMovement(m.id)" class="text-ink-3 hover:text-danger transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                           </button>
                         </div>
@@ -207,164 +156,99 @@
                   </tbody>
                 </table>
               </div>
-              <div v-else class="p-6 text-gray-500 text-center">Нет перемещений</div>
+              <div v-else class="p-8 body-s text-ink-3 text-center">Нет перемещений</div>
             </div>
-            
-            <!-- Пагинация -->
-            <div v-if="movements?.totalElements > 0" class="mt-6">
-              <!-- Контроль размера страницы -->
-              <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center space-x-2">
-                  <span class="text-sm text-gray-700">Показать:</span>
-                  <select v-model="pageSize" @change="changePageSize" class="text-sm border border-gray-300 rounded-md px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+
+<div v-if="movements?.totalElements > 0" class="mt-5">
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <span class="body-s text-ink-2">Показать:</span>
+                  <select v-model="pageSize" @change="changePageSize" class="field" style="width: auto; height: 32px; padding: 0 8px;">
                     <option :value="10">10</option>
                     <option :value="25">25</option>
                     <option :value="50">50</option>
                   </select>
-                  <span class="text-sm text-gray-700">записей</span>
+                  <span class="body-s text-ink-2">записей</span>
                 </div>
-                <div class="text-sm text-gray-700">
-                  Показано {{ (currentPage * pageSize) + 1 }}-{{ Math.min((currentPage + 1) * pageSize, movements.totalElements) }} из {{ movements.totalElements }}
+                <div class="body-s text-ink-3">
+                  Показано {{ (currentPage * pageSize) + 1 }}–{{ Math.min((currentPage + 1) * pageSize, movements.totalElements) }} из {{ movements.totalElements }}
                 </div>
               </div>
-              
-              <!-- Навигация по страницам -->
-              <div v-if="movements?.totalPages > 1" class="flex items-center justify-center space-x-2">
-                <button
-                  @click="goToPage(currentPage - 1)"
-                  :disabled="currentPage === 0"
-                  class="px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+
+              <div v-if="movements?.totalPages > 1" class="flex items-center justify-center gap-1">
+                <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 0" class="btn btn-secondary btn-sm disabled:opacity-40 disabled:cursor-not-allowed">
                   ‹ Назад
                 </button>
-                
-                <!-- Номера страниц -->
-                <div class="flex items-center space-x-1">
+                <div class="flex items-center gap-1">
                   <button
                     v-for="page in visiblePages"
                     :key="page"
                     @click="goToPage(page - 1)"
-                    :class="[
-                      'px-3 py-2 text-sm border rounded-md transition-colors',
-                      currentPage === page - 1 
-                        ? 'bg-blue-600 text-white border-blue-600' 
-                        : 'border-gray-300 hover:bg-gray-50'
-                    ]">
+                    class="btn btn-sm"
+                    :class="currentPage === page - 1 ? 'btn-primary' : 'btn-secondary'">
                     {{ page }}
                   </button>
                 </div>
-                
-                <button
-                  @click="goToPage(currentPage + 1)"
-                  :disabled="currentPage >= movements.totalPages - 1"
-                  class="px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                <button @click="goToPage(currentPage + 1)" :disabled="currentPage >= movements.totalPages - 1" class="btn btn-secondary btn-sm disabled:opacity-40 disabled:cursor-not-allowed">
                   Вперед ›
                 </button>
               </div>
             </div>
-            <!-- Модалка создания/редактирования -->
-            <div v-if="showCreateModal || editModalData" class="fixed inset-0 bg-transparent backdrop-blur-sm flex items-center justify-center z-50" @click.self="closeModal">
-              <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg relative">
-                <h4 class="text-lg font-semibold mb-4">{{ editModalData ? 'Редактировать' : 'Создать' }} перемещение</h4>
+
+<div v-if="showCreateModal || editModalData" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50" @click.self="closeModal">
+              <div class="bg-surface rounded-[var(--r-4)] p-6 w-full max-w-lg mx-4" style="box-shadow: var(--shadow-3);">
+                <h4 class="h3 text-ink mb-5">{{ editModalData ? 'Редактировать' : 'Создать' }} перемещение</h4>
                 <form @submit.prevent="submitMovement">
-                  <div class="grid grid-cols-2 gap-4 mb-4">
+                  <div class="grid grid-cols-2 gap-3 mb-4">
                     <div>
-                      <label class="block text-sm font-medium mb-1" :class="{ 'text-gray-400': !shouldShowFromField }">
-                        Откуда
-                        <span v-if="isFromRequired" class="text-red-500">*</span>
+                      <label class="caption block mb-1" :class="{ 'opacity-40': !shouldShowFromField }">
+                        Откуда<span v-if="isFromRequired" class="text-danger ml-0.5">*</span>
                       </label>
                       <div v-if="shouldShowFromField">
-                        <WarehouseSelector
-                          v-model="form.fromPointOfStorageId"
-                          placeholder="Выберите склад откуда"
-                          @select="handleFromWarehouseSelect"
-                          :error="validationErrors.fromPointOfStorageId"
-                          :display-data="editModalData?.fromPointOfStorage"
-                          :is-edit-mode="!!editModalData"
-                        />
+                        <WarehouseSelector v-model="form.fromPointOfStorageId" placeholder="Выберите склад откуда" @select="handleFromWarehouseSelect" :error="validationErrors.fromPointOfStorageId" :display-data="editModalData?.fromPointOfStorage" :is-edit-mode="!!editModalData" />
                       </div>
                       <div v-else>
-                        <input 
-                          type="text" 
-                          class="input bg-gray-100 text-gray-400 cursor-not-allowed" 
-                          placeholder="Не требуется для данного типа операции"
-                          disabled
-                          readonly
-                        />
+                        <input type="text" class="field opacity-50 cursor-not-allowed" placeholder="Не требуется для данного типа" disabled readonly />
                       </div>
                     </div>
                     <div>
-                      <label class="block text-sm font-medium mb-1" :class="{ 'text-gray-400': !shouldShowToField }">
-                        Куда
-                        <span v-if="isToRequired" class="text-red-500">*</span>
+                      <label class="caption block mb-1" :class="{ 'opacity-40': !shouldShowToField }">
+                        Куда<span v-if="isToRequired" class="text-danger ml-0.5">*</span>
                       </label>
                       <div v-if="shouldShowToField">
-                        <WarehouseSelector
-                          v-model="form.toPointOfStorageId"
-                          placeholder="Выберите склад куда"
-                          @select="handleToWarehouseSelect"
-                          :error="validationErrors.toPointOfStorageId"
-                          :display-data="editModalData?.toPointOfStorage"
-                          :is-edit-mode="!!editModalData"
-                        />
+                        <WarehouseSelector v-model="form.toPointOfStorageId" placeholder="Выберите склад куда" @select="handleToWarehouseSelect" :error="validationErrors.toPointOfStorageId" :display-data="editModalData?.toPointOfStorage" :is-edit-mode="!!editModalData" />
                       </div>
                       <div v-else>
-                        <input 
-                          type="text" 
-                          class="input bg-gray-100 text-gray-400 cursor-not-allowed" 
-                          placeholder="Не требуется для данного типа операции"
-                          disabled
-                          readonly
-                        />
+                        <input type="text" class="field opacity-50 cursor-not-allowed" placeholder="Не требуется для данного типа" disabled readonly />
                       </div>
                     </div>
                     <div>
-                      <label class="block text-sm font-medium mb-1">
-                        Вариант товара
-                        <span class="text-red-500">*</span>
-                      </label>
-                      <ItemVariantSelector
-                        v-model="form.itemVariantId"
-                        placeholder="Выберите вариант товара (поиск по SKU или штрих-коду)"
-                        @select="handleVariantSelect"
-                        :error="validationErrors.itemVariantId"
-                        required
-                        :display-data="editModalData?.itemVariant"
-                        :is-edit-mode="!!editModalData"
-                      />
+                      <label class="caption block mb-1">Вариант товара<span class="text-danger ml-0.5">*</span></label>
+                      <ItemVariantSelector v-model="form.itemVariantId" placeholder="Поиск по SKU или штрих-коду" @select="handleVariantSelect" :error="validationErrors.itemVariantId" required :display-data="editModalData?.itemVariant" :is-edit-mode="!!editModalData" />
                     </div>
                     <div>
-                      <label class="block text-sm font-medium mb-1">Цена за ед.</label>
-                      <input v-model.number="form.pricePerItem" type="number" step="0.01" class="input" />
+                      <label class="caption block mb-1">Цена за ед.</label>
+                      <input v-model.number="form.pricePerItem" type="number" step="0.01" class="field" />
                     </div>
                     <div>
-                      <label class="block text-sm font-medium mb-1">Валюта</label>
-                      <select v-model="form.currency" class="input">
+                      <label class="caption block mb-1">Валюта</label>
+                      <select v-model="form.currency" class="field">
                         <option value="">Выберите валюту</option>
-                        <option v-for="currency in currencies" :key="currency" :value="currency">
-                          {{ currency }}
-                        </option>
+                        <option v-for="currency in currencies" :key="currency" :value="currency">{{ currency }}</option>
                       </select>
                     </div>
                     <div>
-                      <label class="block text-sm font-medium mb-1">
-                        Кол-во
-                        <span class="text-red-500">*</span>
-                      </label>
-                      <input v-model.number="form.quantity" type="number" class="input" :class="{ 'border-red-500': validationErrors.quantity }" required />
+                      <label class="caption block mb-1">Кол-во<span class="text-danger ml-0.5">*</span></label>
+                      <input v-model.number="form.quantity" type="number" class="field" :style="validationErrors.quantity ? 'border-color: var(--danger);' : ''" required />
                     </div>
                     <div>
-                      <label class="block text-sm font-medium mb-1">Причина</label>
-                      <input v-model="form.reason" class="input" maxlength="255" />
-                      <div class="text-xs text-gray-500 mt-1 text-right">
-                        {{ (form.reason || '').length }}/255
-                      </div>
+                      <label class="caption block mb-1">Причина</label>
+                      <input v-model="form.reason" class="field" maxlength="255" />
+                      <div class="body-s text-ink-3 mt-1 text-right">{{ (form.reason || '').length }}/255</div>
                     </div>
                     <div>
-                      <label class="block text-sm font-medium mb-1">
-                        Тип
-                        <span class="text-red-500">*</span>
-                      </label>
-                      <select v-model="form.type" @change="onTypeChange" class="input" required>
+                      <label class="caption block mb-1">Тип<span class="text-danger ml-0.5">*</span></label>
+                      <select v-model="form.type" @change="onTypeChange" class="field" required>
                         <option value="PURCHASE">Поступление</option>
                         <option value="SALE">Продажа</option>
                         <option value="TRANSFER">Перемещение</option>
@@ -372,74 +256,45 @@
                         <option value="WRITE_OFF">Списание</option>
                         <option value="RESERVE">Резервирование</option>
                       </select>
-                      <div v-if="typeDescription" class="text-xs text-gray-500 mt-1">
-                        {{ typeDescription }}
-                      </div>
+                      <div v-if="typeDescription" class="body-s text-ink-3 mt-1">{{ typeDescription }}</div>
                     </div>
                     <div>
-                      <label class="block text-sm font-medium mb-1">Дата создания</label>
-                      <input 
-                        v-model="form.created" 
-                        type="datetime-local" 
-                        class="input"
-                        placeholder="Выберите дату и время"
-                      />
+                      <label class="caption block mb-1">Дата создания</label>
+                      <input v-model="form.created" type="datetime-local" class="field" />
                     </div>
                   </div>
-                  <div class="flex items-center justify-end space-x-3 mt-6">
-                    <button
-                      type="button"
-                      @click="closeModal"
-                      class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                      Отмена
-                    </button>
-                    <button
-                      type="submit"
-                      :disabled="loading"
-                      class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                  <div class="flex items-center justify-end gap-3 mt-4">
+                    <button type="button" @click="closeModal" class="btn btn-secondary">Отмена</button>
+                    <button type="submit" :disabled="loading" class="btn btn-primary disabled:opacity-50">
                       {{ editModalData ? 'Сохранить' : 'Создать' }}
                     </button>
                   </div>
                 </form>
               </div>
             </div>
-            
-            <!-- Модалка подтверждения удаления -->
-            <div v-if="showDeleteModal" class="fixed inset-0 bg-transparent backdrop-blur-sm flex items-center justify-center z-50" @click.self="closeDeleteModal">
-              <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
-                <div class="flex items-center mb-4">
-                  <div class="flex-shrink-0">
-                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+
+<div v-if="showDeleteModal" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50" @click.self="closeDeleteModal">
+              <div class="bg-surface rounded-[var(--r-4)] p-6 w-full max-w-md mx-4" style="box-shadow: var(--shadow-3);">
+                <div class="flex items-center gap-3 mb-5">
+                  <div class="p-2 rounded-[var(--r-3)] bg-danger-soft shrink-0">
+                    <svg class="w-5 h-5 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </div>
-                  <div class="ml-3">
-                    <h3 class="text-lg font-medium text-gray-900">Подтверждение удаления</h3>
-                    <p class="text-sm text-gray-500">Это действие нельзя отменить.</p>
+                  <div>
+                    <h3 class="h3 text-ink">Подтверждение удаления</h3>
+                    <p class="body-s text-ink-3">Это действие нельзя отменить.</p>
                   </div>
                 </div>
-                
-                <div class="flex items-center justify-end space-x-3">
-                  <button
-                    type="button"
-                    @click="closeDeleteModal"
-                    class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                    Отмена
-                  </button>
-                  <button
-                    type="button"
-                    @click="confirmDelete"
-                    class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-                    Удалить
-                  </button>
+                <div class="flex items-center justify-end gap-3">
+                  <button type="button" @click="closeDeleteModal" class="btn btn-secondary">Отмена</button>
+                  <button type="button" @click="confirmDelete" class="btn btn-danger">Удалить</button>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </main>
-      
-      <!-- Footer -->
       <Footer />
     </div>
   </div>
@@ -468,9 +323,9 @@ const editModalData = ref(null);
 const showDeleteModal = ref(false);
 const deleteModalData = ref(null);
 const currencies = ref([]);
-const validationErrors = ref({}); // Для отслеживания ошибок валидации
+const validationErrors = ref({});
 
-// Состояние фильтров
+
 const filters = ref({
   fromPointOfStorageId: '',
   toPointOfStorageId: '',
@@ -481,8 +336,8 @@ const filters = ref({
 });
 
 const currentPage = ref(0);
-const pageSize = ref(25); // По умолчанию 25 записей
-const sortOrder = ref('desc'); // По умолчанию сортировка по убыванию (новые сверху)
+const pageSize = ref(25);
+const sortOrder = ref('desc');
 
 const form = ref({
   fromPointOfStorageId: '',
@@ -502,7 +357,7 @@ const canEdit = computed(() => {
   return role === 'ADMIN' || role === 'OWNER' || role === 'WAREHOUSE_MANAGER';
 });
 
-// Computed properties для управления полями формы в зависимости от типа операции
+
 const shouldShowFromField = computed(() => {
   const type = form.value.type;
   return ['SALE', 'TRANSFER', 'WRITE_OFF', 'RESERVE'].includes(type);
@@ -535,23 +390,23 @@ const typeDescription = computed(() => {
   return descriptions[form.value.type] || '';
 });
 
-// Computed для видимых номеров страниц
+
 const visiblePages = computed(() => {
   if (!movements.value?.totalPages) return [];
-  
+
   const totalPages = movements.value.totalPages;
-  const current = currentPage.value + 1; // Текущая страница (1-based)
+  const current = currentPage.value + 1;
   const pages = [];
-  
+
   if (totalPages <= 7) {
-    // Если страниц мало, показываем все
+
     for (let i = 1; i <= totalPages; i++) {
       pages.push(i);
     }
   } else {
-    // Показываем первую, последнюю и несколько вокруг текущей
+
     if (current <= 4) {
-      // Начало: 1, 2, 3, 4, 5, ..., last
+
       for (let i = 1; i <= 5; i++) {
         pages.push(i);
       }
@@ -560,7 +415,7 @@ const visiblePages = computed(() => {
         pages.push(totalPages);
       }
     } else if (current >= totalPages - 3) {
-      // Конец: 1, ..., last-4, last-3, last-2, last-1, last
+
       pages.push(1);
       if (totalPages > 6) {
         pages.push('...');
@@ -569,7 +424,7 @@ const visiblePages = computed(() => {
         pages.push(i);
       }
     } else {
-      // Середина: 1, ..., current-1, current, current+1, ..., last
+
       pages.push(1);
       pages.push('...');
       for (let i = current - 1; i <= current + 1; i++) {
@@ -579,21 +434,21 @@ const visiblePages = computed(() => {
       pages.push(totalPages);
     }
   }
-  
+
   return pages.filter(page => page !== '...' || pages.indexOf(page) === pages.lastIndexOf(page));
 });
 
 function formatDate(dateStr) {
   if (!dateStr) return '-';
   const d = new Date(dateStr);
-  
+
   const localDate = new Date(d.getTime() + (5 * 60 * 60 * 1000));
-  
+
   const pad = n => n.toString().padStart(2, '0');
   return `${pad(localDate.getDate())}.${pad(localDate.getMonth() + 1)}.${localDate.getFullYear()} ${pad(localDate.getHours())}:${pad(localDate.getMinutes())}`;
 }
 
-// Функция для конвертации локального времени в UTC для отправки на сервер
+
 function convertToUTC(dateTimeString) {
   if (!dateTimeString) return null;
   try {
@@ -602,7 +457,7 @@ function convertToUTC(dateTimeString) {
       console.warn('Некорректная дата:', dateTimeString);
       return null;
     }
-    // Просто возвращаем ISO строку (UTC)
+
     return localDate.toISOString().replace('Z', '');
   } catch (error) {
     console.error('Ошибка конвертации даты в UTC:', error);
@@ -622,19 +477,31 @@ function getMovementTypeName(type) {
   return typeNames[type] || type;
 }
 
+function getMovementBadgeClass(type) {
+  const badgeClasses = {
+    'PURCHASE': 'badge--purchase',
+    'SALE': 'badge--sale',
+    'TRANSFER': 'badge--transfer',
+    'RETURN': 'badge--return',
+    'WRITE_OFF': 'badge--writeoff',
+    'RESERVE': 'badge--reserve'
+  };
+  return badgeClasses[type] || 'badge--neutral';
+}
+
 async function loadMovements() {
   if (!organizationsStore.selectedOrganization?.id) return;
-  
-  // Показываем loading только для таблицы, не для всего компонента
+
+
   tableLoading.value = true;
-  
+
   try {
-    // Подготавливаем фильтры, убирая пустые значения и конвертируя даты в UTC
+
     const activeFilters = {};
     Object.keys(filters.value).forEach(key => {
       if (filters.value[key] && filters.value[key] !== '') {
         if (key === 'from' || key === 'to') {
-          // Конвертируем даты в UTC для отправки на сервер (отнимаем 5 часов)
+
           const utcDate = convertToUTC(filters.value[key]);
           if (utcDate) {
             activeFilters[key] = utcDate;
@@ -644,21 +511,21 @@ async function loadMovements() {
         }
       }
     });
-    
+
     const pageable = {
       page: currentPage.value,
       size: pageSize.value,
       sort: `created,${sortOrder.value}`
     };
-    
+
     const newMovements = await warehouseService.getItemMovements(
       organizationsStore.selectedOrganization.id,
       activeFilters,
       pageable
     );
-    
+
     movements.value = newMovements;
-    
+
   } catch (e) {
     error.value = e.message || 'Ошибка загрузки перемещений';
   } finally {
@@ -678,11 +545,11 @@ async function loadCurrencies() {
 function closeModal() {
   showCreateModal.value = false;
   editModalData.value = null;
-  validationErrors.value = {}; // Очищаем ошибки валидации
+  validationErrors.value = {};
   resetForm();
-  // Даем время селекторам сбросить свои значения
+
   setTimeout(() => {
-    // Дополнительная очистка если нужно
+
   }, 50);
 }
 
@@ -716,26 +583,26 @@ function resetForm() {
   };
 }
 
-// Функция для обработки изменения типа операции
+
 function onTypeChange() {
-  // Очищаем поля склада при смене типа
+
   if (!shouldShowFromField.value) {
     form.value.fromPointOfStorageId = '';
   }
   if (!shouldShowToField.value) {
     form.value.toPointOfStorageId = '';
   }
-  
-  // Очищаем ошибки валидации
+
+
   delete validationErrors.value.fromPointOfStorageId;
   delete validationErrors.value.toPointOfStorageId;
 }
 
 function editMovement(movement) {
   editModalData.value = movement;
-  validationErrors.value = {}; // Очищаем ошибки валидации
-  
-  // Конвертируем UTC время в локальное для отображения в поле datetime-local
+  validationErrors.value = {};
+
+
   let localCreated = '';
   if (movement.created) {
     try {
@@ -752,7 +619,7 @@ function editMovement(movement) {
       localCreated = '';
     }
   }
-  
+
   form.value = {
     fromPointOfStorageId: movement.fromPointOfStorage?.id || '',
     toPointOfStorageId: movement.toPointOfStorage?.id || '',
@@ -765,40 +632,40 @@ function editMovement(movement) {
     created: localCreated,
     organizationId: organizationsStore.selectedOrganization?.id || ''
   };
-  
-  // Открываем модальное окно - селекторы получат данные через display-data
+
+
   showCreateModal.value = true;
 }
 
 function handleFromWarehouseSelect(warehouse) {
-  // Очищаем ошибку валидации для этого поля
+
   delete validationErrors.value.fromPointOfStorageId;
 }
 
 function handleToWarehouseSelect(warehouse) {
-  // Очищаем ошибку валидации для этого поля
+
   delete validationErrors.value.toPointOfStorageId;
 }
 
 function handleVariantSelect(variant) {
-  // Auto-fill price from variant if available
+
   if (variant.price) {
     form.value.pricePerItem = variant.price;
   }
-  // Auto-fill currency from variant if available
+
   if (variant.currency) {
     form.value.currency = variant.currency;
   }
-  // Очищаем ошибку валидации для этого поля
+
   delete validationErrors.value.itemVariantId;
 }
 
 async function submitMovement() {
-  // Валидация обязательных полей
+
   validationErrors.value = {};
   let hasErrors = false;
 
-  // Проверка обязательных полей
+
   if (!form.value.itemVariantId) {
     validationErrors.value.itemVariantId = true;
     hasErrors = true;
@@ -808,7 +675,7 @@ async function submitMovement() {
     hasErrors = true;
   }
 
-  // Проверка обязательных полей склада в зависимости от типа операции
+
   if (isFromRequired.value && !form.value.fromPointOfStorageId) {
     validationErrors.value.fromPointOfStorageId = true;
     hasErrors = true;
@@ -818,10 +685,10 @@ async function submitMovement() {
     hasErrors = true;
   }
 
-  // Специальная проверка для TRANSFER: from не должен равняться to
-  if (form.value.type === 'TRANSFER' && 
-      form.value.fromPointOfStorageId && 
-      form.value.toPointOfStorageId && 
+
+  if (form.value.type === 'TRANSFER' &&
+      form.value.fromPointOfStorageId &&
+      form.value.toPointOfStorageId &&
       form.value.fromPointOfStorageId === form.value.toPointOfStorageId) {
     validationErrors.value.fromPointOfStorageId = true;
     validationErrors.value.toPointOfStorageId = true;
@@ -830,16 +697,16 @@ async function submitMovement() {
   }
 
   if (hasErrors) {
-    return; // Не отправляем запрос если есть ошибки валидации
+    return;
   }
 
-  // Подготавливаем данные для отправки
+
   const submitData = {
     ...form.value,
-    currency: form.value.currency || null // Передаем null если валюта не выбрана
+    currency: form.value.currency || null
   };
 
-  // Очищаем поля, которые не должны быть заполнены для данного типа операции
+
   if (!shouldShowFromField.value) {
     submitData.fromPointOfStorageId = null;
   }
@@ -849,7 +716,7 @@ async function submitMovement() {
 
   try {
     if (editModalData.value) {
-      // При редактировании конвертируем локальное время в UTC
+
       if (submitData.created) {
         const utcDate = convertToUTC(submitData.created);
         if (utcDate) {
@@ -858,28 +725,28 @@ async function submitMovement() {
       }
       await warehouseService.updateItemMovement(editModalData.value.id, submitData);
     } else {
-      // Конвертируем локальное время в UTC для отправки на сервер
+
       let utcDate = null;
       if (submitData.created) {
         utcDate = convertToUTC(submitData.created);
       } else {
         utcDate = convertToUTC(getCurrentLocalDateTimeString());
       }
-      await warehouseService.createItemMovement({ 
-        ...submitData, 
-        created: utcDate, 
-        organizationId: organizationsStore.selectedOrganization.id 
+      await warehouseService.createItemMovement({
+        ...submitData,
+        created: utcDate,
+        organizationId: organizationsStore.selectedOrganization.id
       });
     }
     closeModal();
     await loadMovements();
   } catch (e) {
     const errorMessage = e.message || 'Ошибка сохранения';
-    if (errorMessage.includes('недостаточно остатков') || 
+    if (errorMessage.includes('недостаточно остатков') ||
         errorMessage.includes('insufficient quantity') ||
         errorMessage.includes('not enough stock')) {
       error.value = 'Недостаточно товара на складе для выполнения операции';
-    } else if (errorMessage.includes('negative balance') || 
+    } else if (errorMessage.includes('negative balance') ||
                errorMessage.includes('отрицательный остаток')) {
       error.value = 'Операция приведёт к отрицательному остатку на складе';
     } else {
@@ -914,13 +781,13 @@ function resetFilters() {
     to: ''
   };
   currentPage.value = 0;
-  // Используем debounced загрузку для плавности
+
   debouncedLoadMovements();
 }
 
 function applyFilters() {
   currentPage.value = 0;
-  // Используем debounced загрузку для плавности
+
   debouncedLoadMovements();
 }
 
@@ -941,12 +808,12 @@ function handleItemVariantChange(value) {
 
 function toggleSort() {
   sortOrder.value = sortOrder.value === 'desc' ? 'asc' : 'desc';
-  currentPage.value = 0; // Сбрасываем на первую страницу при изменении сортировки
+  currentPage.value = 0;
   loadMovements();
 }
 
 function changePageSize() {
-  currentPage.value = 0; // Сбрасываем на первую страницу при изменении размера
+  currentPage.value = 0;
   loadMovements();
 }
 
@@ -960,7 +827,7 @@ function goToPage(page) {
 function clearFilter(filterName) {
   filters.value[filterName] = '';
   currentPage.value = 0;
-  // Используем debounced загрузку для плавности
+
   debouncedLoadMovements();
 }
 
@@ -974,7 +841,7 @@ function debouncedLoadMovements() {
   }, 300);
 }
 
-// Добавить функцию для открытия модалки создания
+
 function openCreateModal() {
   resetForm();
   editModalData.value = null;
@@ -986,12 +853,12 @@ onMounted(() => {
   loadCurrencies();
 });
 
-// Watch for organization changes to reload data
+
 watch(() => organizationsStore.selectedOrganizationId, (newVal) => {
   if (newVal) {
-    // Сбрасываем пагинацию при смене организации
+
     currentPage.value = 0;
-    // Очищаем данные без перезагрузки страницы
+
     movements.value = { content: [], totalElements: 0, totalPages: 0, number: 0, first: true, last: true, numberOfElements: 0 };
     loadMovements();
     loadCurrencies();
@@ -1002,18 +869,3 @@ watch(() => organizationsStore.selectedOrganizationId, (newVal) => {
 }, { immediate: true });
 </script>
 
-<style scoped>
-.input {
-  width: 100%;
-  padding: 8px 10px;
-  border: 1.5px solid #d1e3fa;
-  border-radius: 6px;
-  font-size: 1rem;
-  background: #f8fbff;
-  margin-bottom: 2px;
-}
-.input:focus {
-  border-color: #007bff;
-  background: #fff;
-}
-</style> 

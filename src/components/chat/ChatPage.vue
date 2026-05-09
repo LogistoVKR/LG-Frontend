@@ -1,15 +1,11 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <!-- Sidebar -->
-    <Sidebar />
+  <div class="min-h-screen bg-paper">
+<Sidebar />
 
-    <!-- Main Content -->
-    <div class="flex flex-col min-h-screen transition-all duration-300" :class="isSidebarOpen ? 'ml-64' : 'ml-0'">
-      <!-- Header -->
-      <Header />
+<div class="flex flex-col min-h-screen transition-all duration-300" :class="isSidebarOpen ? 'ml-64' : 'ml-0'">
+<Header />
 
-      <!-- Chat Content -->
-      <main class="flex-1 flex overflow-hidden">
+<main class="flex-1 flex overflow-hidden">
         <ChatListPanel
           :active-chat-id="chatStore.activeChatId"
           @select="chatStore.selectChat"
@@ -17,8 +13,7 @@
         <ChatConversation />
       </main>
 
-      <!-- Footer -->
-      <Footer />
+<Footer />
     </div>
   </div>
 </template>

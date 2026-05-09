@@ -7,42 +7,42 @@ import { useOrganizationsStore } from './organizations.js';
 export const useUsersStore = defineStore('users', () => {
   const { getToken } = useAuth();
   const organizationsStore = useOrganizationsStore();
-  
-  // State
+
+
   const users = ref({ content: [], page: { totalElements: 0, totalPages: 0, number: 0 } });
   const loading = ref(false);
   const error = ref(null);
   const currentPage = ref(0);
   const pageSize = ref(20);
-  
-  // Search filters
+
+
   const filters = ref({
     username: '',
     firstName: '',
     lastName: ''
   });
 
-  // Computed
+
   const organizationId = computed(() => organizationsStore.selectedOrganizationId);
 
-  // Actions
+
   const loadUsers = async () => {
-    // Не загружаем данные, если загружаются организации или организация не выбрана
+
     if (organizationsStore.loading || !organizationId.value) {
       users.value = { content: [], page: { totalElements: 0, totalPages: 0, number: 0 } };
       return;
     }
-    
+
     loading.value = true;
     error.value = null;
-    
+
     try {
       const token = await getToken();
-      console.log('Загружаем пользователей с фильтрами:', filters.value); // Отладочная информация
+      console.log('Загружаем пользователей с фильтрами:', filters.value);
       const result = await userService.getUsersByOrganizationId(
-        organizationId.value, 
-        currentPage.value, 
-        pageSize.value, 
+        organizationId.value,
+        currentPage.value,
+        pageSize.value,
         token,
         filters.value.username,
         filters.value.firstName,
@@ -57,24 +57,24 @@ export const useUsersStore = defineStore('users', () => {
     }
   };
 
-  // Поиск пользователей для добавления в организацию (с параметром or=true)
+
   const searchUsersForAdd = async (searchTerm) => {
     if (!organizationId.value) {
       return { content: [] };
     }
-    
+
     try {
       const token = await getToken();
       console.log('Поиск пользователей для добавления:', searchTerm);
       const result = await userService.getUsersByOrganizationId(
-        organizationId.value, 
-        0, // первая страница
-        50, // больше результатов для поиска
+        organizationId.value,
+        0,
+        50,
         token,
-        searchTerm, // username
-        searchTerm, // firstName
-        searchTerm, // lastName
-        true // or=true
+        searchTerm,
+        searchTerm,
+        searchTerm,
+        true
       );
       return result;
     } catch (err) {
@@ -109,10 +109,10 @@ export const useUsersStore = defineStore('users', () => {
         ...data,
         organizationId: organizationId.value
       }, token);
-      
-      // После успешного добавления всегда обновляем список пользователей
+
+
       await loadUsers();
-      
+
       return response;
     } catch (err) {
       error.value = 'Ошибка при добавлении пользователя: ' + err.message;
@@ -128,15 +128,15 @@ export const useUsersStore = defineStore('users', () => {
         ...data,
         organizationId: organizationId.value
       }, token);
-      
-      // Если API возвращает обновленные данные пользователя, обновляем локальное состояние
+
+
       if (response) {
         console.log('Ответ от API при обновлении пользователя:', response);
-        
+
         const updatedUser = response.user || response.data || response;
-        
+
         if (updatedUser && updatedUser.created) {
-          // Находим пользователя в списке и обновляем его данные
+
           const userIndex = users.value.content.findIndex(user => user.id === data.userId);
           if (userIndex !== -1) {
             users.value.content[userIndex] = {
@@ -146,12 +146,12 @@ export const useUsersStore = defineStore('users', () => {
             console.log('Обновлен пользователь с новым created:', updatedUser.created);
           }
         } else {
-          // Если нет обновленных данных, перезагружаем весь список
+
           console.log('Перезагружаем список пользователей');
           await loadUsers();
         }
       } else {
-        // Если нет ответа, перезагружаем весь список
+
         console.log('Нет ответа от API, перезагружаем список пользователей');
         await loadUsers();
       }
@@ -177,7 +177,7 @@ export const useUsersStore = defineStore('users', () => {
     }
   };
 
-  // Utility functions
+
   const getUserInitials = (user) => {
     const firstName = user.firstName || '';
     const lastName = user.lastName || '';
@@ -214,26 +214,26 @@ export const useUsersStore = defineStore('users', () => {
 
   const formatDate = (dateString) => {
     if (!dateString) return 'Не указано';
-    
+
     try {
       const utcDate = new Date(dateString);
-      
+
       if (isNaN(utcDate.getTime())) {
         console.warn('Некорректная дата:', dateString);
         return 'Не указано';
       }
-      
+
       const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      
+
       const formattedDate = utcDate.toLocaleString('ru-RU', {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
         hour: '2-digit',
         minute: '2-digit'
-        // Убираем timeZone - пусть JavaScript сам определит локальную зону
+
       });
-      
+
       return formattedDate;
     } catch (error) {
       console.error('Ошибка форматирования даты:', error);
@@ -241,7 +241,7 @@ export const useUsersStore = defineStore('users', () => {
     }
   };
 
-  // Utility methods for data access
+
   const getTotalElements = () => {
     if (users.value.page?.totalElements !== undefined) {
       return users.value.page.totalElements;
@@ -281,7 +281,7 @@ export const useUsersStore = defineStore('users', () => {
     return totalPages > 1 && totalElements > pageSize.value;
   };
 
-  // Watch for organization changes
+
   watch(organizationId, (newValue) => {
     if (newValue && !organizationsStore.loading) {
       loadUsers();
@@ -291,7 +291,7 @@ export const useUsersStore = defineStore('users', () => {
     }
   });
 
-  // Watch for organizations loading completion
+
   watch(() => organizationsStore.loading, (isLoading) => {
     if (!isLoading && organizationId.value) {
       loadUsers();
@@ -299,18 +299,18 @@ export const useUsersStore = defineStore('users', () => {
   });
 
   return {
-    // State
+
     users,
     loading,
     error,
     currentPage,
     pageSize,
     filters,
-    
-    // Computed
+
+
     organizationId,
-    
-    // Actions
+
+
     loadUsers,
     changePage,
     updateFilters,
@@ -319,8 +319,8 @@ export const useUsersStore = defineStore('users', () => {
     updateUserInOrganization,
     removeUserFromOrganization,
     searchUsersForAdd,
-    
-    // Utility functions
+
+
     getUserInitials,
     getUserFullName,
     getRoleDisplayName,
@@ -332,4 +332,4 @@ export const useUsersStore = defineStore('users', () => {
     getCurrentPage,
     shouldShowPagination
   };
-}); 
+});

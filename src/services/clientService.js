@@ -19,7 +19,7 @@ class ClientService {
       page: page.toString(),
       size: size.toString()
     });
-    
+
     if (firstName && firstName.trim()) {
       params.append('firstName', firstName.trim());
     }
@@ -29,7 +29,7 @@ class ClientService {
     if (dateOfBirth && dateOfBirth.trim()) {
       params.append('dateOfBirth', dateOfBirth.trim());
     }
-    
+
     const response = await authFetch(`${this.baseUrl}/organizations/${organizationId}/clients?${params}`, {
       method: 'GET',
       headers: this.getAuthHeaders(token)
@@ -41,7 +41,7 @@ class ClientService {
   }
 
   async createClient(organizationId, data, token) {
-    // Формируем тело запроса согласно требованиям
+
     const payload = {
       firstName: data.firstName,
       lastName: data.lastName,
@@ -49,7 +49,7 @@ class ClientService {
       dateOfBirth: data.dateOfBirth,
       email: data.email,
       phoneNumber: data.phoneNumber,
-      organizationId: organizationId // обязательно
+      organizationId: organizationId
     };
     if (data.personalDiscount !== null && data.personalDiscount !== undefined && data.personalDiscount !== '') {
       payload.personalDiscount = Number(data.personalDiscount);
@@ -67,14 +67,14 @@ class ClientService {
   }
 
   async updateClient(organizationId, clientId, data, token) {
-    // Формируем тело запроса согласно требованиям
+
     const payload = {
       firstName: data.firstName,
       lastName: data.lastName,
       middleName: data.middleName,
       dateOfBirth: data.dateOfBirth,
       email: data.email,
-      phoneNumber: data.phoneNumber // не обязательный
+      phoneNumber: data.phoneNumber
     };
     if (data.personalDiscount !== null && data.personalDiscount !== undefined && data.personalDiscount !== '') {
       payload.personalDiscount = Number(data.personalDiscount);
@@ -103,4 +103,4 @@ class ClientService {
   }
 }
 
-export default new ClientService(); 
+export default new ClientService();

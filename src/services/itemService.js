@@ -22,7 +22,7 @@ class ItemService {
       page: searchParams.page.toString(),
       size: searchParams.size.toString()
     });
-    
+
     if (searchParams.name) {
       params.append('name', searchParams.name);
     }
@@ -32,11 +32,11 @@ class ItemService {
     if (searchParams.barcode) {
       params.append('barcode', searchParams.barcode);
     }
-    
+
     if (searchParams.or) {
       params.append('or', searchParams.or);
     }
-    
+
     const response = await authFetch(`${this.baseUrl}/items?${params}`, {
       method: 'GET',
       headers: await this.getAuthHeaders()
@@ -161,4 +161,4 @@ class ItemService {
   }
 }
 
-export default new ItemService(); 
+export default new ItemService();

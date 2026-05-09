@@ -1,50 +1,35 @@
 <template>
-  <div class="w-80 border-r border-gray-200 flex flex-col bg-white">
-    <!-- Header -->
-    <div class="p-4 border-b border-gray-200">
-      <h3 class="text-lg font-semibold text-gray-900">Чаты</h3>
-      <p class="text-xs text-gray-500 mt-0.5">
-        {{ chats.length }} {{ chatNoun }}
-      </p>
+  <div class="w-80 border-r border-line flex flex-col bg-paper">
+<div class="px-4 py-3 border-b border-line">
+      <h3 class="h3 text-ink">Чаты</h3>
+      <p class="body-s text-ink-3 mt-0.5">{{ chats.length }} {{ chatNoun }}</p>
     </div>
 
-    <!-- Chat list -->
-    <div class="flex-1 overflow-y-auto">
-      <div v-if="chats.length === 0" class="p-6 text-center text-gray-400 text-sm">
-        Нет активных чатов
-      </div>
+<div class="flex-1 overflow-y-auto">
+      <div v-if="chats.length === 0" class="p-6 body-s text-center text-ink-3">Нет активных чатов</div>
       <div
         v-for="chat in chats"
         :key="chat.id"
         @click="$emit('select', chat.id)"
-        class="flex items-center px-4 py-3 cursor-pointer transition-colors border-b border-gray-50"
-        :class="chat.id === activeChatId ? 'bg-blue-50' : 'hover:bg-gray-50'"
+        class="flex items-center px-4 py-3 cursor-pointer transition-colors border-b border-line-2"
+        :class="chat.id === activeChatId ? 'bg-accent-soft' : 'hover:bg-surface-2'"
       >
-        <!-- Avatar -->
-        <div class="w-10 h-10 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-sm font-medium flex-shrink-0">
+        <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold shrink-0" style="background: var(--surface-3); color: var(--ink-2);">
           {{ getInitial(chat.anonymousName) }}
         </div>
 
-        <!-- Info -->
         <div class="ml-3 flex-1 min-w-0">
           <div class="flex items-center justify-between">
-            <p class="text-sm font-medium text-gray-900 truncate">
-              {{ chat.anonymousName || 'Аноним' }}
-            </p>
-            <span v-if="chat.lastMessageTime" class="text-xs text-gray-400 flex-shrink-0 ml-2">
-              {{ formatTime(chat.lastMessageTime) }}
-            </span>
+            <p class="body-s font-medium text-ink truncate">{{ chat.anonymousName || 'Аноним' }}</p>
+            <span v-if="chat.lastMessageTime" class="body-s text-ink-3 shrink-0 ml-2">{{ formatTime(chat.lastMessageTime) }}</span>
           </div>
-          <p class="text-xs text-gray-500 truncate mt-0.5">
-            {{ chat.lastMessage || 'Новый чат' }}
-          </p>
+          <p class="body-s text-ink-3 truncate mt-0.5">{{ chat.lastMessage || 'Новый чат' }}</p>
         </div>
 
-        <!-- Unread badge -->
         <span
           v-if="(unreadMap[chat.id] || 0) > 0"
-          class="ml-2 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5 flex-shrink-0"
-        >
+          class="ml-2 text-xs font-semibold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5 shrink-0"
+          style="background: var(--danger); color: #fff;">
           {{ (unreadMap[chat.id] || 0) > 99 ? '99+' : (unreadMap[chat.id] || 0) }}
         </span>
       </div>

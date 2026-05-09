@@ -3,7 +3,7 @@ import keycloakService from '@/services/keycloak.js';
 import userService from '@/services/userService.js';
 import router from '@/router/index.js';
 
-// --- SINGLETON STATE ---
+
 const isAuthenticated = ref(false);
 const user = ref(null);
 const isLoading = ref(true);
@@ -34,11 +34,11 @@ const initAuth = async () => {
       window.addEventListener('keycloak-auth-logout', () => {
         isAuthenticated.value = false;
         user.value = null;
-        // Всегда перенаправляем на главную страницу после логаута
+
         console.log('🔄 useAuth: Redirecting to home after Keycloak logout event');
         console.log('Current path:', router.currentRoute.value.path);
-        
-        // Принудительное перенаправление на главную
+
+
         setTimeout(() => {
           if (router.currentRoute.value.path !== '/') {
             console.log('🔄 useAuth: Force redirecting to home');
@@ -64,7 +64,7 @@ const login = async (redirectPath = '/dashboard') => {
     console.log('🔐 useAuth: Starting login...');
     await keycloakService.login(redirectPath);
     console.log('✅ useAuth: Login completed');
-    // После успешного логина отправляем токен на /user-service/login
+
     const token = keycloakService.getToken();
     if (token) {
       try {
@@ -74,7 +74,7 @@ const login = async (redirectPath = '/dashboard') => {
         console.error('❌ Error sending token to /user-service/login after login:', e);
       }
     }
-    // Состояние будет обновлено через событие keycloak-auth-success
+
   } catch (error) {
     console.error('❌ useAuth: Ошибка входа:', error);
     throw error;
@@ -97,16 +97,16 @@ const updateAuthState = async () => {
     console.log('🔄 useAuth: Updating auth state after login...');
     const authenticated = keycloakService.isAuthenticated();
     console.log('📊 useAuth: Current auth state:', authenticated);
-    
+
     const wasAuthenticated = isAuthenticated.value;
     isAuthenticated.value = authenticated;
-    
+
     if (authenticated) {
       user.value = keycloakService.getUserInfo();
       console.log('👤 useAuth: Updated user info:', user.value);
       console.log('🔄 useAuth: Auth state change detected:', { wasAuthenticated, authenticated });
     } else {
-      // Очищаем кэш токена если пользователь не аутентифицирован
+
       tokenCache = null;
       tokenCacheTime = 0;
     }
@@ -121,11 +121,11 @@ const logout = async () => {
     await keycloakService.logout();
     isAuthenticated.value = false;
     user.value = null;
-    
-    // Очищаем кэш токена
+
+
     tokenCache = null;
     tokenCacheTime = 0;
-    
+
     console.log('✅ useAuth: Logout completed');
   } catch (error) {
     console.error('❌ useAuth: Ошибка выхода:', error);
@@ -144,28 +144,28 @@ const updateToken = async (minValidity = 30) => {
   }
 };
 
-// Кэш для токена
+
 let tokenCache = null;
 let tokenCacheTime = 0;
-const TOKEN_CACHE_DURATION = 5000; // 5 секунд
+const TOKEN_CACHE_DURATION = 5000;
 
 const getToken = async () => {
   try {
     const now = Date.now();
-    
+
     if (tokenCache && (now - tokenCacheTime) < TOKEN_CACHE_DURATION) {
       console.log('🔑 useAuth: Using cached token');
       return tokenCache;
     }
-    
+
     await updateToken(30);
     const token = keycloakService.getToken();
-    
-    // Кэшируем токен
+
+
     tokenCache = token;
     tokenCacheTime = now;
-    
-    // После обновления токена отправляем его на /user-service/login
+
+
     if (token) {
       try {
         await userService.getCurrentUser(token);
@@ -178,7 +178,7 @@ const getToken = async () => {
     return token;
   } catch (error) {
     console.error('❌ useAuth: Ошибка получения токена:', error);
-    // Очищаем кэш при ошибке
+
     tokenCache = null;
     tokenCacheTime = 0;
     return null;
@@ -217,4 +217,4 @@ export function useAuth() {
     isMember,
     isWarehouseManager
   };
-} 
+}

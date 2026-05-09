@@ -1,68 +1,37 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <!-- Sidebar -->
+  <div class="min-h-screen bg-paper">
     <Sidebar />
-
-    <!-- Main Content -->
     <div class="flex flex-col min-h-screen transition-all duration-300" :class="isSidebarOpen ? 'ml-64' : 'ml-0'">
-      <!-- Header -->
       <Header />
-
-      <!-- Page Content -->
       <main class="flex-1 p-6">
         <div class="max-w-7xl mx-auto">
-          <!-- Warehouses Content -->
           <div>
-            <!-- Action Bar -->
-            <div class="flex justify-between items-center mb-6">
+            <div class="flex justify-between items-center mb-5">
               <div>
-                <h3 class="text-lg font-semibold text-gray-900">Точки хранения</h3>
-                <p class="text-sm text-gray-600">Всего: {{ getTotalElements() || 0 }}</p>
+                <h3 class="h3 text-ink">Точки хранения</h3>
+                <p class="body-s text-ink-3 mt-0.5">Всего: {{ getTotalElements() || 0 }}</p>
               </div>
-              <button
-                v-if="canManageWarehouses"
-                @click="showCreateModal = true"
-                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h6v6H3V3zM15 3h6v6h-6V3zM3 15h6v6H3v-6zM15 15h6v6h-6v-6z" />
+              <button v-if="canManageWarehouses" @click="showCreateModal = true" class="btn btn-primary gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
-                <span>Добавить склад</span>
+                Добавить склад
               </button>
             </div>
 
-            <!-- Search Filters -->
-            <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="bg-surface rounded-[var(--r-3)] p-4 mb-5" style="box-shadow: var(--shadow-1);">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">
-                    Название склада
-                  </label>
-                  <input
-                    v-model="filters.name"
-                    type="text"
-                    placeholder="Поиск по названию"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    @input="debouncedSearch">
+                  <label class="caption block mb-1">Название склада</label>
+                  <input v-model="filters.name" type="text" placeholder="Поиск по названию" class="field" @input="debouncedSearch">
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">
-                    Расположение
-                  </label>
-                  <input
-                    v-model="filters.location"
-                    type="text"
-                    placeholder="Поиск по расположению"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    @input="debouncedSearch">
+                  <label class="caption block mb-1">Расположение</label>
+                  <input v-model="filters.location" type="text" placeholder="Поиск по расположению" class="field" @input="debouncedSearch">
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">
-                    Тип
-                  </label>
-                  <select
-                    v-model="filters.type"
-                    @change="debouncedSearch"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  <label class="caption block mb-1">Тип</label>
+                  <select v-model="filters.type" @change="debouncedSearch" class="field">
                     <option value="">Все типы</option>
                     <option value="WAREHOUSE">Склад</option>
                     <option value="POINT_OF_SALE">Точка продаж</option>
@@ -70,16 +39,11 @@
                 </div>
               </div>
               <div class="mt-3 flex justify-end">
-                <button
-                  @click="clearFilters"
-                  class="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 transition-colors">
-                  Очистить фильтры
-                </button>
+                <button @click="clearFilters" class="btn btn-ghost btn-sm text-ink-3 hover:text-ink">Очистить фильтры</button>
               </div>
             </div>
 
-            <!-- Warehouses Table (отдельный компонент) -->
-            <WarehousesTable
+<WarehousesTable
               :warehouses="warehouses"
               :loading="loading"
               :error="error"
@@ -93,81 +57,40 @@
         </div>
       </main>
 
-      <!-- Footer -->
       <Footer />
     </div>
 
-    <!-- Create/Edit Modal -->
-    <div v-if="(showCreateModal || showEditModal) && canManageWarehouses" class="fixed inset-0 bg-transparent backdrop-blur-sm flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4" @click.stop>
-        <div class="px-6 py-4 border-b">
-          <h3 class="text-lg font-semibold text-gray-900">
-            {{ showEditModal ? 'Редактировать склад' : 'Добавить склад' }}
-          </h3>
+<div v-if="(showCreateModal || showEditModal) && canManageWarehouses" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+      <div class="bg-surface rounded-[var(--r-4)] max-w-md w-full mx-4" style="box-shadow: var(--shadow-3);" @click.stop>
+        <div class="px-6 py-4 border-b border-line">
+          <h3 class="h3 text-ink">{{ showEditModal ? 'Редактировать склад' : 'Добавить склад' }}</h3>
         </div>
-        
         <form @submit.prevent="handleSubmit" class="px-6 py-4">
           <div class="space-y-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                Название *
-              </label>
-              <input
-                v-model="form.name"
-                type="text"
-                required
-                maxlength="255"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Введите название склада">
+              <label class="caption block mb-1">Название *</label>
+              <input v-model="form.name" type="text" required maxlength="255" class="field" placeholder="Введите название склада">
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                Описание
-              </label>
-              <textarea
-                v-model="form.description"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Описание склада"
-                rows="2"
-                maxlength="255"></textarea>
+              <label class="caption block mb-1">Описание</label>
+              <textarea v-model="form.description" class="field" placeholder="Описание склада" rows="2" maxlength="255" style="height: auto; padding-top: 8px; padding-bottom: 8px;"></textarea>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                Расположение
-              </label>
-              <input
-                v-model="form.location"
-                type="text"
-                maxlength="255"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Введите адрес или описание расположения">
+              <label class="caption block mb-1">Расположение</label>
+              <input v-model="form.location" type="text" maxlength="255" class="field" placeholder="Введите адрес или описание расположения">
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                Тип *
-              </label>
-              <select
-                v-model="form.type"
-                required
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <label class="caption block mb-1">Тип *</label>
+              <select v-model="form.type" required class="field">
                 <option value="">Выберите тип</option>
                 <option value="WAREHOUSE">Склад</option>
                 <option value="POINT_OF_SALE">Точка продаж</option>
               </select>
             </div>
           </div>
-          
-          <div class="flex justify-end space-x-3 mt-6">
-            <button
-              type="button"
-              @click="closeModal"
-              class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-              Отмена
-            </button>
-            <button
-              type="submit"
-              :disabled="submitting"
-              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors">
+          <div class="flex justify-end gap-3 mt-6">
+            <button type="button" @click="closeModal" class="btn btn-secondary">Отмена</button>
+            <button type="submit" :disabled="submitting" class="btn btn-primary disabled:opacity-50">
               {{ submitting ? 'Сохранение...' : (showEditModal ? 'Обновить' : 'Создать') }}
             </button>
           </div>
@@ -175,30 +98,19 @@
       </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
-    <div v-if="showDeleteModal && canManageWarehouses" class="fixed inset-0 bg-transparent backdrop-blur-sm flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4" @click.stop>
-        <div class="px-6 py-4 border-b">
-          <h3 class="text-lg font-semibold text-gray-900">Подтверждение удаления</h3>
+<div v-if="showDeleteModal && canManageWarehouses" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+      <div class="bg-surface rounded-[var(--r-4)] max-w-md w-full mx-4" style="box-shadow: var(--shadow-3);" @click.stop>
+        <div class="px-6 py-4 border-b border-line">
+          <h3 class="h3 text-ink">Подтверждение удаления</h3>
         </div>
-        
         <div class="px-6 py-4">
-          <p class="text-gray-700 mb-4">
-            Вы уверены, что хотите удалить склад "{{ warehouseToDelete?.name }}"?
-            Это действие нельзя отменить.
+          <p class="body text-ink-2">
+            Вы уверены, что хотите удалить склад "{{ warehouseToDelete?.name }}"? Это действие нельзя отменить.
           </p>
         </div>
-        
-        <div class="flex justify-end space-x-3 px-6 py-4 border-t">
-          <button
-            @click="showDeleteModal = false"
-            class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-            Отмена
-          </button>
-          <button
-            @click="confirmDelete"
-            :disabled="submitting"
-            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors">
+        <div class="flex justify-end gap-3 px-6 py-4 border-t border-line">
+          <button @click="showDeleteModal = false" class="btn btn-secondary">Отмена</button>
+          <button @click="confirmDelete" :disabled="submitting" class="btn btn-danger disabled:opacity-50">
             {{ submitting ? 'Удаление...' : 'Удалить' }}
           </button>
         </div>
@@ -206,7 +118,7 @@
     </div>
   </div>
 
-  
+
 </template>
 
 <script setup>
@@ -255,7 +167,7 @@ const filters = ref({
   type: ''
 });
 
-// Debounced search
+
 let searchTimeout = null;
 const debouncedSearch = () => {
   if (searchTimeout) {
@@ -284,8 +196,8 @@ const loadWarehouses = async () => {
       type: filters.value.type
     };
     const result = await warehouseService.getPointsOfStorage(orgId, params);
-    
-    // Обеспечиваем совместимость с разными структурами ответа
+
+
     warehouses.value = {
       content: result.content || result.data || [],
       totalElements: result.totalElements || result.page?.totalElements || 0,
@@ -346,7 +258,7 @@ const handleSubmit = async () => {
     const orgId = organizationsStore.selectedOrganizationId;
     const locationValue = form.value.location && form.value.location.trim() !== '' ? form.value.location : null;
     if (showEditModal.value && form.value.id) {
-      // Обновление: не передавать organizationId, только name, description, location, type если есть
+
       const updateData = {};
       if (form.value.name && form.value.name.trim() !== '') updateData.name = form.value.name.slice(0, 255);
       if (form.value.description && form.value.description.trim() !== '') updateData.description = form.value.description.slice(0, 255);
@@ -354,7 +266,7 @@ const handleSubmit = async () => {
       if (form.value.type) updateData.type = form.value.type;
       await warehouseService.updatePointOfStorage(form.value.id, updateData);
     } else {
-      // Создание: передавать organizationId и все поля
+
       const data = {
         name: form.value.name.slice(0, 255),
         location: locationValue ? locationValue.slice(0, 255) : null,
@@ -389,7 +301,7 @@ const clearFilters = () => {
   loadWarehouses();
 };
 
-// Utility methods for pagination and data handling
+
 const getTotalElements = () => {
   if (warehouses.value.totalElements !== undefined) {
     return warehouses.value.totalElements;
@@ -422,7 +334,7 @@ const shouldShowPagination = () => {
 
 watch(() => organizationsStore.selectedOrganizationId, (newVal) => {
   if (newVal) {
-    currentPage.value = 0; // Сбрасываем страницу при смене организации
+    currentPage.value = 0;
     loadWarehouses();
   } else {
     warehouses.value = { content: [], totalElements: 0, totalPages: 0, number: 0, first: true, last: true, numberOfElements: 0 };
@@ -434,7 +346,7 @@ onMounted(() => {
 });
 
 
-</script> 
+</script>
 
 <style scoped>
-</style> 
+</style>

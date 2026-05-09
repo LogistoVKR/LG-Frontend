@@ -33,7 +33,7 @@ class WarehouseService {
       if (searchParams.type && searchParams.type.trim()) {
         params.append('type', searchParams.type.trim());
       }
-      
+
       if (searchParams.name || searchParams.location) {
         params.append('or', 'true');
       }
@@ -289,6 +289,16 @@ class WarehouseService {
     }
   }
 
+  async syncOzon(organizationId) {
+    const response = await authFetch(`${this.baseUrl}/ozon/sync?organizationId=${organizationId}`, {
+      method: 'POST',
+      headers: await this.getAuthHeaders()
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+  }
+
   async getItemVariantPointOfStorageCount(organizationId) {
     try {
       const response = await authFetch(`${this.baseUrl}/organizations/${organizationId}/counts`, {
@@ -306,4 +316,4 @@ class WarehouseService {
   }
 }
 
-export default new WarehouseService(); 
+export default new WarehouseService();
