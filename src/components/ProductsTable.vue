@@ -39,8 +39,12 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                       </svg>
                     </button>
-                    <div class="relative group min-w-0">
+                    <div class="relative group min-w-0 flex items-center gap-2">
                       <div class="text-sm font-medium text-gray-900 truncate">{{ truncate(product.name) }}</div>
+                      <svg v-if="product.ozonItem" class="flex-shrink-0 w-9 h-4" viewBox="0 0 36 16" fill="none" xmlns="http://www.w3.org/2000/svg" title="Ozon">
+                        <rect width="36" height="16" rx="4" fill="#005BFF"/>
+                        <text x="18" y="11.5" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" font-weight="700" fill="white" letter-spacing="0.5">OZON</text>
+                      </svg>
                       <div v-if="product.name && product.name.length > 35" class="absolute z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bottom-full left-0 mb-1 px-2 py-1.5 bg-gray-800/75 text-white text-xs rounded-lg shadow-lg whitespace-normal w-max max-w-xs pointer-events-none">
                         {{ product.name }}
                       </div>
