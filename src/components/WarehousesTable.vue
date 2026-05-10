@@ -31,7 +31,10 @@
           <tbody>
             <tr v-for="warehouse in warehouses.content" :key="warehouse.id" class="border-b border-line-2 hover:bg-surface-2 transition-colors">
               <td class="px-5 py-3 whitespace-nowrap">
-                <div class="body-s font-medium text-ink">{{ warehouse.name }}</div>
+                <div class="flex items-center gap-2">
+                  <div class="body-s font-medium text-ink">{{ warehouse.name }}</div>
+                  <span v-if="warehouse.ozonPointOfStorage" class="badge badge--ozon shrink-0">Ozon</span>
+                </div>
               </td>
               <td class="px-5 py-3 whitespace-nowrap">
                 <div class="body-s text-ink-2">{{ warehouse.location || '—' }}</div>

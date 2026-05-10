@@ -192,7 +192,7 @@ const syncOzon = async () => {
   ozonSyncing.value = true;
   ozonSyncResult.value = null;
   try {
-    await warehouseService.syncOzon(orgId);
+    await warehouseService.syncOzonItems(orgId);
     ozonSyncResult.value = 'success';
     await loadProducts();
   } catch (err) {

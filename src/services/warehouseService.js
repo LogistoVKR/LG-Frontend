@@ -289,8 +289,29 @@ class WarehouseService {
     }
   }
 
-  async syncOzon(organizationId) {
-    const response = await authFetch(`${this.baseUrl}/ozon/sync?organizationId=${organizationId}`, {
+  async getOzonWarehousesAvailability(organizationId) {
+    const response = await authFetch(`${this.baseUrl}/ozon/warehouses/availability?organizationId=${organizationId}`, {
+      method: 'GET',
+      headers: await this.getAuthHeaders()
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  }
+
+  async syncOzonItems(organizationId) {
+    const response = await authFetch(`${this.baseUrl}/ozon/sync/items?organizationId=${organizationId}`, {
+      method: 'POST',
+      headers: await this.getAuthHeaders()
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+  }
+
+  async syncOzonWarehouses(organizationId) {
+    const response = await authFetch(`${this.baseUrl}/ozon/sync/warehouses?organizationId=${organizationId}`, {
       method: 'POST',
       headers: await this.getAuthHeaders()
     });

@@ -11,12 +11,40 @@
                 <h3 class="h3 text-ink">Точки хранения</h3>
                 <p class="body-s text-ink-3 mt-0.5">Всего: {{ getTotalElements() || 0 }}</p>
               </div>
-              <button v-if="canManageWarehouses" @click="showCreateModal = true" class="btn btn-primary gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                Добавить склад
-              </button>
+              <div class="flex items-center gap-2">
+                <div class="relative">
+                  <button
+                    v-if="canManageWarehouses"
+                    @click="syncOzon"
+                    :disabled="ozonSyncing"
+                    class="btn btn-secondary gap-2 disabled:opacity-60"
+                    title="Синхронизировать точки хранения с Ozon"
+                  >
+                    <svg
+                      class="w-4 h-4"
+                      :class="{ 'animate-spin': ozonSyncing }"
+                      fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    {{ ozonSyncing ? 'Синхронизация...' : 'Синх. Ozon' }}
+                  </button>
+                  <span
+                    v-if="ozonSyncResult === 'success'"
+                    class="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-success text-white text-[9px] font-bold"
+                  >✓</span>
+                  <span
+                    v-if="ozonSyncResult === 'error'"
+                    class="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-danger text-white text-[9px] font-bold"
+                  >!</span>
+                </div>
+                <button v-if="canManageWarehouses" @click="showCreateModal = true" class="btn btn-primary gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Добавить склад
+                </button>
+              </div>
             </div>
 
 <div class="bg-surface rounded-[var(--r-3)] p-4 mb-5" style="box-shadow: var(--shadow-1);">
@@ -152,6 +180,27 @@ const showEditModal = ref(false);
 const showDeleteModal = ref(false);
 const submitting = ref(false);
 const warehouseToDelete = ref(null);
+
+const ozonSyncing = ref(false);
+const ozonSyncResult = ref(null);
+
+const syncOzon = async () => {
+  const orgId = organizationsStore.selectedOrganizationId;
+  if (!orgId || ozonSyncing.value) return;
+  ozonSyncing.value = true;
+  ozonSyncResult.value = null;
+  try {
+    await warehouseService.syncOzonWarehouses(orgId);
+    ozonSyncResult.value = 'success';
+    await loadWarehouses();
+  } catch (err) {
+    console.error('Ozon warehouses sync error:', err);
+    ozonSyncResult.value = 'error';
+  } finally {
+    ozonSyncing.value = false;
+    setTimeout(() => { ozonSyncResult.value = null; }, 4000);
+  }
+};
 
 const form = ref({
   name: '',

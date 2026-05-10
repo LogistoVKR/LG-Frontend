@@ -423,6 +423,71 @@
             </div>
 
 
+            <div v-if="organizationsStore.selectedOrganization?.hasOzonIntegration"
+                 class="bg-surface rounded-[var(--r-3)] mt-4" style="box-shadow: var(--shadow-1);">
+
+              <button
+                @click="toggleOzonSection"
+                class="w-full flex items-center gap-3 p-5 text-left focus:outline-none"
+                style="border-radius: var(--r-3);">
+                <div class="w-8 h-8 rounded-[var(--r-2)] flex items-center justify-center flex-shrink-0"
+                     style="background: var(--rust-soft);">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                       style="stroke: var(--rust);">
+                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                    <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" />
+                    <line x1="12" y1="12" x2="12" y2="16" />
+                    <line x1="10" y1="14" x2="14" y2="14" />
+                  </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h4 class="text-base font-semibold text-ink">Активные склады Ozon · средняя загруженность</h4>
+                  <p class="text-sm text-ink-3">Список активных складов на ближайшее время</p>
+                </div>
+                <svg
+                  class="w-4 h-4 flex-shrink-0 ml-1 transition-transform duration-200"
+                  :style="{ transform: ozonExpanded ? 'rotate(180deg)' : 'rotate(0deg)', color: 'var(--ink-3)' }"
+                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              <div v-if="ozonExpanded" class="px-5 pb-5">
+                <div class="border-t border-line mb-5"></div>
+
+                <div v-if="ozonAvailabilityLoading" class="flex items-center justify-center py-12">
+                  <div class="animate-spin rounded-full h-7 w-7 border-b-2 mr-3" style="border-color: var(--rust);"></div>
+                  <span class="body-s text-ink-3">Загрузка данных...</span>
+                </div>
+
+                <div v-else-if="ozonAvailabilityError" class="flex items-center gap-3 rounded-[var(--r-2)] p-4"
+                     style="background: var(--danger-soft); border: 1px solid var(--danger);">
+                  <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                       style="color: var(--danger);">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span class="body-s" style="color: var(--danger);">{{ ozonAvailabilityError }}</span>
+                </div>
+
+                <div v-else-if="ozonAvailabilityData.length === 0" class="flex flex-col items-center justify-center py-12 text-ink-3">
+                  <div class="w-12 h-12 rounded-full flex items-center justify-center mb-3"
+                       style="background: var(--surface-3);">
+                    <svg class="w-6 h-6 text-ink-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" stroke-width="1.5" />
+                      <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" stroke-width="1.5" />
+                    </svg>
+                  </div>
+                  <p class="text-sm font-medium text-ink-3">Нет данных по складам Ozon</p>
+                  <p class="text-xs text-ink-3 mt-1">Убедитесь, что интеграция настроена и синхронизирована</p>
+                </div>
+
+                <div v-else style="position: relative;" :style="{ height: Math.max(160, ozonAvailabilityData.length * 48) + 'px' }">
+                  <canvas ref="ozonChartRef"></canvas>
+                </div>
+              </div>
+            </div>
+
+
           </div>
           </div>
       </main>
@@ -520,6 +585,14 @@ const salesSelectorKey = ref(0);
 const subscriptions = ref([]);
 const subscriptionsLoading = ref(false);
 const subscriptionsError = ref(null);
+
+
+const ozonAvailabilityData = ref([]);
+const ozonAvailabilityLoading = ref(false);
+const ozonAvailabilityError = ref(null);
+const ozonExpanded = ref(false);
+const ozonChartRef = ref(null);
+let ozonChart = null;
 
 
 function convertToUTC(dateTimeString) {
@@ -1093,6 +1166,103 @@ async function loadSubscriptions() {
   }
 }
 
+async function loadOzonAvailability() {
+  if (!organizationsStore.selectedOrganization?.hasOzonIntegration) return;
+  const orgId = organizationsStore.selectedOrganization.id;
+  ozonAvailabilityLoading.value = true;
+  ozonAvailabilityError.value = null;
+  try {
+    ozonAvailabilityData.value = await warehouseService.getOzonWarehousesAvailability(orgId);
+  } catch (e) {
+    ozonAvailabilityError.value = e.message || 'Ошибка загрузки данных складов Ozon';
+    ozonAvailabilityData.value = [];
+  } finally {
+    ozonAvailabilityLoading.value = false;
+  }
+  if (ozonAvailabilityData.value.length > 0) {
+    await nextTick();
+    updateOzonChart();
+  }
+}
+
+async function toggleOzonSection() {
+  ozonExpanded.value = !ozonExpanded.value;
+  if (ozonExpanded.value && ozonAvailabilityData.value.length === 0 && !ozonAvailabilityError.value) {
+    await loadOzonAvailability();
+  } else if (ozonExpanded.value && ozonAvailabilityData.value.length > 0) {
+    await nextTick();
+    updateOzonChart();
+  }
+}
+
+function updateOzonChart() {
+  try {
+    const canvas = ozonChartRef.value;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    if (ozonChart) {
+      ozonChart.destroy();
+      ozonChart = null;
+    }
+
+    const labels = ozonAvailabilityData.value.map(w => w.warehouseName);
+    const data = ozonAvailabilityData.value.map(w => w.averageCapacity);
+
+    const rustColor = getComputedStyle(document.documentElement).getPropertyValue('--rust').trim() || '#B4540A';
+    const rustSoft = getComputedStyle(document.documentElement).getPropertyValue('--rust-soft').trim() || '#F5E6D5';
+    const inkColor = getComputedStyle(document.documentElement).getPropertyValue('--ink-3').trim() || '#8A8F94';
+
+    ozonChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Средняя загруженность',
+          data,
+          backgroundColor: rustSoft,
+          borderColor: rustColor,
+          borderWidth: 1.5,
+          borderRadius: 4
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `Загруженность: ${new Intl.NumberFormat('ru-RU').format(context.parsed.x)}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            ticks: {
+              color: inkColor,
+              callback: function(value) {
+                return new Intl.NumberFormat('ru-RU', { notation: 'compact' }).format(value);
+              }
+            },
+            grid: { color: 'rgba(20,24,26,0.06)' }
+          },
+          y: {
+            ticks: { color: inkColor }
+          }
+        }
+      }
+    });
+  } catch (e) {
+    console.error('Error creating Ozon chart:', e);
+  }
+}
+
 function goToProductsBySku(sku) {
   router.push({ path: '/dashboard/products', query: { sku } });
 }
@@ -1164,6 +1334,10 @@ function destroyCharts() {
       salesChart.destroy();
       salesChart = null;
     }
+    if (ozonChart) {
+      ozonChart.destroy();
+      ozonChart = null;
+    }
   } catch (error) {
     console.error('Error destroying charts:', error);
   }
@@ -1201,6 +1375,8 @@ watch(() => organizationsStore.selectedOrganizationId, (newVal, oldVal) => {
 
     loadMovements();
     loadSubscriptions();
+    ozonAvailabilityData.value = [];
+    ozonExpanded.value = false;
   } else {
     destroyCharts();
     movements.value = null;
@@ -1220,6 +1396,9 @@ watch(() => organizationsStore.selectedOrganizationId, (newVal, oldVal) => {
     salesSelectorKey.value++;
     subscriptions.value = [];
     subscriptionsError.value = null;
+    ozonAvailabilityData.value = [];
+    ozonAvailabilityError.value = null;
+    ozonExpanded.value = false;
   }
 }, { immediate: true });
 </script>
