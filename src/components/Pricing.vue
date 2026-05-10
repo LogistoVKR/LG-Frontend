@@ -49,7 +49,7 @@
           <div class="mb-4 sm:mb-6">
             <h2 class="text-lg sm:text-xl font-semibold">Расширенный</h2>
             <p class="text-ink-2 text-sm sm:text-base mt-1 sm:mt-2">Для растущих команд</p>
-            <p class="mt-2 sm:mt-3 text-lg sm:text-xl font-bold text-[var(--accent-hover)] whitespace-nowrap">9 999 ₸ в месяц</p>
+            <p class="mt-2 sm:mt-3 text-lg sm:text-xl font-bold text-[var(--accent-hover)] whitespace-nowrap">9 999 ₽ в месяц</p>
           </div>
 
           <ul class="text-left space-y-2 flex-1">
@@ -90,7 +90,7 @@
           <div class="mb-4 sm:mb-6">
             <h2 class="text-lg font-semibold">CRM</h2>
             <p class="text-ink-2 text-sm sm:text-base mt-1 sm:mt-2">Для профессионалов</p>
-            <p class="mt-2 sm:mt-3 text-lg sm:text-xl font-bold text-[var(--accent-hover)] whitespace-nowrap">25 999 ₸ в месяц</p>
+            <p class="mt-2 sm:mt-3 text-lg sm:text-xl font-bold text-[var(--accent-hover)] whitespace-nowrap">25 999 ₽ в месяц</p>
           </div>
 
           <ul class="text-left space-y-2 flex-1">
@@ -135,7 +135,7 @@
           <div class="mb-4 sm:mb-6">
             <h2 class="text-lg font-semibold">Умный</h2>
             <p class="text-ink-2 text-sm sm:text-base mt-1 sm:mt-2">Максимум возможностей</p>
-            <p class="mt-2 sm:mt-3 text-lg sm:text-xl font-bold text-[var(--accent-hover)] whitespace-nowrap">45 999 ₸ в месяц</p>
+            <p class="mt-2 sm:mt-3 text-lg sm:text-xl font-bold text-[var(--accent-hover)] whitespace-nowrap">45 999 ₽ в месяц</p>
           </div>
 
           <ul class="text-left space-y-2 flex-1">
