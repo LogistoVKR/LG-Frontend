@@ -91,6 +91,17 @@ class ClientService {
     return await response.json();
   }
 
+  async getClientById(clientId, token) {
+    const response = await authFetch(`${this.baseUrl}/clients/${clientId}`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(token)
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  }
+
   async deleteClient(organizationId, clientId, token) {
     const response = await authFetch(`${this.baseUrl}/clients/${clientId}`, {
       method: 'DELETE',

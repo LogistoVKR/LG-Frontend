@@ -140,6 +140,13 @@
                       </td>
                       <td v-if="canEdit" class="px-4 py-2.5 whitespace-nowrap">
                         <div class="flex items-center gap-2">
+                          <button v-if="m.clientId" @click="openClientInfoModal(m)" class="text-ink-3 hover:text-accent transition-colors" title="Клиент и скидка">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M8 8h.01M16 16h.01" />
+                              <circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none" />
+                              <circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none" />
+                            </svg>
+                          </button>
                           <button @click="editMovement(m)" class="text-ink-3 hover:text-accent transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -262,6 +269,37 @@
                       <label class="caption block mb-1">Дата создания</label>
                       <input v-model="form.created" type="datetime-local" class="field" />
                     </div>
+                    <div v-if="isSaleCreate" class="col-span-2">
+                      <label class="caption block mb-1">
+                        Клиент
+                        <span class="text-ink-3 font-normal">(необязательно)</span>
+                      </label>
+                      <ClientSelector
+                        v-model="form.clientId"
+                        placeholder="Поиск по имени или фамилии"
+                        @select="handleClientSelect"
+                        :error="false"
+                      />
+                    </div>
+                  </div>
+                  <div v-if="isSaleCreate && fullPrice != null" class="mb-4 p-3 bg-surface-2 rounded-[var(--r-2)] border border-line">
+                    <div class="flex items-center justify-between body-s">
+                      <span class="text-ink-2">Полная стоимость</span>
+                      <span class="text-ink font-medium mono">{{ fullPrice.toFixed(2) }}{{ form.currency ? ' ' + form.currency : '' }}</span>
+                    </div>
+                    <template v-if="discountedPrice != null">
+                      <div class="flex items-center justify-between body-s mt-1.5">
+                        <div class="flex items-center gap-2">
+                          <span class="text-ink-2">Скидка клиента</span>
+                          <span class="badge badge--sale">{{ selectedClient.personalDiscount }}%</span>
+                        </div>
+                        <span class="text-ink-3 line-through mono">{{ fullPrice.toFixed(2) }}{{ form.currency ? ' ' + form.currency : '' }}</span>
+                      </div>
+                      <div class="flex items-center justify-between body-s mt-1">
+                        <span class="text-ink font-medium">Итого со скидкой</span>
+                        <span class="font-medium mono" style="color: var(--accent);">{{ discountedPrice.toFixed(2) }}{{ form.currency ? ' ' + form.currency : '' }}</span>
+                      </div>
+                    </template>
                   </div>
                   <div class="flex items-center justify-end gap-3 mt-4">
                     <button type="button" @click="closeModal" class="btn btn-secondary">Отмена</button>
@@ -292,6 +330,76 @@
                 </div>
               </div>
             </div>
+
+            <div v-if="clientInfoModal.show" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50" @click.self="closeClientInfoModal">
+              <div class="bg-surface rounded-[var(--r-4)] p-6 w-full max-w-sm mx-4" style="box-shadow: var(--shadow-3);">
+                <div class="flex items-center justify-between mb-5">
+                  <h4 class="h3 text-ink">Клиент и скидка</h4>
+                  <button @click="closeClientInfoModal" class="text-ink-3 hover:text-ink transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                <div v-if="clientInfoModal.loading" class="flex items-center justify-center py-6 gap-2 text-ink-3">
+                  <div class="animate-spin rounded-full h-5 w-5 border-b-2" style="border-color: var(--accent);"></div>
+                  <span class="body-s">Загрузка...</span>
+                </div>
+
+                <div v-else-if="clientInfoModal.error" class="py-4 body-s text-danger text-center">
+                  {{ clientInfoModal.error }}
+                </div>
+
+                <template v-else-if="clientInfoModal.client">
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between py-2 border-b border-line-2">
+                      <span class="caption text-ink-2">Имя</span>
+                      <span class="body-s text-ink font-medium">
+                        {{ [clientInfoModal.client.firstName, clientInfoModal.client.lastName].filter(Boolean).join(' ') }}
+                      </span>
+                    </div>
+                    <div v-if="clientInfoModal.client.phoneNumber" class="flex items-center justify-between py-2 border-b border-line-2">
+                      <span class="caption text-ink-2">Телефон</span>
+                      <span class="body-s text-ink mono">{{ clientInfoModal.client.phoneNumber }}</span>
+                    </div>
+                    <div v-if="clientInfoModal.client.email" class="flex items-center justify-between py-2 border-b border-line-2">
+                      <span class="caption text-ink-2">Email</span>
+                      <span class="body-s text-ink">{{ clientInfoModal.client.email }}</span>
+                    </div>
+                    <div class="flex items-center justify-between py-2 border-b border-line-2">
+                      <span class="caption text-ink-2">Персональная скидка</span>
+                      <span v-if="clientInfoModal.client.personalDiscount != null" class="badge badge--sale">
+                        {{ clientInfoModal.client.personalDiscount }}%
+                      </span>
+                      <span v-else class="body-s text-ink-3">Не задана</span>
+                    </div>
+                    <div v-if="clientInfoModal.movement.discount != null" class="flex items-center justify-between py-2 border-b border-line-2">
+                      <span class="caption text-ink-2">Применённая скидка</span>
+                      <span class="badge badge--sale">{{ clientInfoModal.movement.discount }}%</span>
+                    </div>
+                    <template v-if="clientInfoModal.movement.quantity">
+                      <div v-if="clientInfoModal.movement.itemVariant?.price" class="flex items-center justify-between py-2 border-b border-line-2">
+                        <span class="caption text-ink-2">Полная стоимость</span>
+                        <span class="body-s text-ink mono">
+                          {{ (clientInfoModal.movement.itemVariant.price * clientInfoModal.movement.quantity).toFixed(2) }}{{ clientInfoModal.movement.currency ? ' ' + clientInfoModal.movement.currency : '' }}
+                        </span>
+                      </div>
+                      <div v-if="clientInfoModal.movement.pricePerItem" class="flex items-center justify-between py-2">
+                        <span class="caption text-ink-2">Итого со скидкой</span>
+                        <span class="body-s font-medium mono" style="color: var(--accent);">
+                          {{ (clientInfoModal.movement.pricePerItem * clientInfoModal.movement.quantity).toFixed(2) }}{{ clientInfoModal.movement.currency ? ' ' + clientInfoModal.movement.currency : '' }}
+                        </span>
+                      </div>
+                    </template>
+                  </div>
+                </template>
+
+                <div class="flex justify-end mt-5">
+                  <button @click="closeClientInfoModal" class="btn btn-secondary">Закрыть</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </main>
@@ -307,12 +415,16 @@ import Header from './Header.vue';
 import Footer from './Footer.vue';
 import WarehouseSelector from './WarehouseSelector.vue';
 import ItemVariantSelector from './ItemVariantSelector.vue';
+import ClientSelector from './ClientSelector.vue';
 import warehouseService from '@/services/warehouseService.js';
+import clientService from '@/services/clientService.js';
 import { useOrganizationsStore } from '@/stores/organizations.js';
 import { useSidebar } from '@/composables/useSidebar.js';
+import { useAuth } from '@/composables/useAuth.js';
 
 const organizationsStore = useOrganizationsStore();
 const { isSidebarOpen } = useSidebar();
+const { getToken } = useAuth();
 
 const loading = ref(false);
 const error = ref(null);
@@ -322,6 +434,7 @@ const showCreateModal = ref(false);
 const editModalData = ref(null);
 const showDeleteModal = ref(false);
 const deleteModalData = ref(null);
+const clientInfoModal = ref({ show: false, loading: false, error: null, client: null, movement: null });
 const currencies = ref([]);
 const validationErrors = ref({});
 
@@ -349,8 +462,11 @@ const form = ref({
   reason: '',
   type: 'TRANSFER',
   created: '',
-  organizationId: ''
+  organizationId: '',
+  clientId: ''
 });
+
+const selectedClient = ref(null);
 
 const canEdit = computed(() => {
   const role = organizationsStore.selectedOrganization?.role;
@@ -388,6 +504,20 @@ const typeDescription = computed(() => {
     'RESERVE': 'Резервирование товара под заказ'
   };
   return descriptions[form.value.type] || '';
+});
+
+const isSaleCreate = computed(() => !editModalData.value && form.value.type === 'SALE');
+
+const fullPrice = computed(() => {
+  const price = form.value.pricePerItem;
+  const qty = form.value.quantity;
+  if (!price || !qty || price <= 0 || qty <= 0) return null;
+  return price * qty;
+});
+
+const discountedPrice = computed(() => {
+  if (fullPrice.value == null || !selectedClient.value?.personalDiscount) return null;
+  return fullPrice.value * (1 - selectedClient.value.personalDiscount / 100);
 });
 
 
@@ -558,6 +688,23 @@ function closeDeleteModal() {
   deleteModalData.value = null;
 }
 
+async function openClientInfoModal(movement) {
+  clientInfoModal.value = { show: true, loading: true, error: null, client: null, movement };
+  try {
+    const token = await getToken();
+    const client = await clientService.getClientById(movement.clientId, token);
+    clientInfoModal.value.client = client;
+  } catch (e) {
+    clientInfoModal.value.error = 'Не удалось загрузить данные клиента';
+  } finally {
+    clientInfoModal.value.loading = false;
+  }
+}
+
+function closeClientInfoModal() {
+  clientInfoModal.value = { show: false, loading: false, error: null, client: null, movement: null };
+}
+
 function getCurrentLocalDateTimeString() {
   const now = new Date();
   const year = now.getFullYear();
@@ -569,6 +716,7 @@ function getCurrentLocalDateTimeString() {
 }
 
 function resetForm() {
+  selectedClient.value = null;
   form.value = {
     fromPointOfStorageId: '',
     toPointOfStorageId: '',
@@ -579,10 +727,16 @@ function resetForm() {
     reason: '',
     type: 'PURCHASE',
     created: getCurrentLocalDateTimeString(),
-    organizationId: organizationsStore.selectedOrganization?.id || ''
+    organizationId: organizationsStore.selectedOrganization?.id || '',
+    clientId: ''
   };
 }
 
+
+function handleClientSelect(client) {
+  selectedClient.value = client;
+  form.value.clientId = client?.id || '';
+}
 
 function onTypeChange() {
 
@@ -593,6 +747,10 @@ function onTypeChange() {
     form.value.toPointOfStorageId = '';
   }
 
+  if (form.value.type !== 'SALE') {
+    selectedClient.value = null;
+    form.value.clientId = '';
+  }
 
   delete validationErrors.value.fromPointOfStorageId;
   delete validationErrors.value.toPointOfStorageId;
@@ -732,11 +890,16 @@ async function submitMovement() {
       } else {
         utcDate = convertToUTC(getCurrentLocalDateTimeString());
       }
-      await warehouseService.createItemMovement({
+      const createPayload = {
         ...submitData,
         created: utcDate,
         organizationId: organizationsStore.selectedOrganization.id
-      });
+      };
+      delete createPayload.clientId;
+      if (submitData.type === 'SALE' && submitData.clientId) {
+        createPayload.clientId = submitData.clientId;
+      }
+      await warehouseService.createItemMovement(createPayload);
     }
     closeModal();
     await loadMovements();
