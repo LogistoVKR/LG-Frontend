@@ -33,7 +33,7 @@ class WarehouseService {
       if (searchParams.type && searchParams.type.trim()) {
         params.append('type', searchParams.type.trim());
       }
-      
+
       if (searchParams.name || searchParams.location) {
         params.append('or', 'true');
       }
@@ -272,6 +272,54 @@ class WarehouseService {
     }
   }
 
+  async getSubscriptions(organizationId) {
+    try {
+      const params = new URLSearchParams({ organizationId });
+      const response = await authFetch(`${this.baseUrl}/analytics/subscriptions?${params}`, {
+        method: 'GET',
+        headers: await this.getAuthHeaders()
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Ошибка при получении подписок:', error);
+      throw error;
+    }
+  }
+
+  async getOzonWarehousesAvailability(organizationId) {
+    const response = await authFetch(`${this.baseUrl}/ozon/warehouses/availability?organizationId=${organizationId}`, {
+      method: 'GET',
+      headers: await this.getAuthHeaders()
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  }
+
+  async syncOzonItems(organizationId) {
+    const response = await authFetch(`${this.baseUrl}/ozon/sync/items?organizationId=${organizationId}`, {
+      method: 'POST',
+      headers: await this.getAuthHeaders()
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+  }
+
+  async syncOzonWarehouses(organizationId) {
+    const response = await authFetch(`${this.baseUrl}/ozon/sync/warehouses?organizationId=${organizationId}`, {
+      method: 'POST',
+      headers: await this.getAuthHeaders()
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+  }
+
   async getItemVariantPointOfStorageCount(organizationId) {
     try {
       const response = await authFetch(`${this.baseUrl}/organizations/${organizationId}/counts`, {
@@ -289,4 +337,4 @@ class WarehouseService {
   }
 }
 
-export default new WarehouseService(); 
+export default new WarehouseService();

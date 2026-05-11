@@ -19,11 +19,11 @@ class UserService {
         page: page.toString(),
         size: size.toString()
       });
-      
+
       if (name && name.trim()) {
         params.append('name', name.trim());
       }
-      
+
       const response = await authFetch(`${this.baseUrl}/organizations?${params}`, {
         method: 'GET',
         headers: this.getAuthHeaders(token)
@@ -118,7 +118,7 @@ class UserService {
         page: page.toString(),
         size: size.toString()
       });
-      
+
       if (username && username.trim()) {
         params.append('username', username.trim());
       }
@@ -128,7 +128,7 @@ class UserService {
       if (lastName && lastName.trim()) {
         params.append('lastName', lastName.trim());
       }
-      
+
       if (or) {
         params.append('or', 'true');
       }
@@ -268,4 +268,4 @@ class UserService {
   }
 }
 
-export default new UserService(); 
+export default new UserService();

@@ -1,41 +1,39 @@
 <template>
-  <header class="bg-white shadow-sm border-b px-6 py-4">
+  <header class="bg-surface border-b border-line px-6 py-3" style="box-shadow: var(--shadow-1);">
     <div class="flex items-center justify-between">
       <div class="flex items-center space-x-4">
         <OrganizationSelector />
       </div>
-      
-      <!-- Profile Menu -->
-      <div class="flex items-center space-x-4">
+
+<div class="flex items-center space-x-4">
         <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center text-white font-medium">
+          <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold" style="background: var(--accent); color: var(--accent-on);">
             {{ username.charAt(0).toUpperCase() }}
           </div>
           <div class="hidden md:block">
-            <div class="text-sm font-medium text-gray-900">{{ username }}</div>
-            <div class="text-xs text-gray-500">{{ userEmail }}</div>
+            <div class="text-sm font-medium text-ink">{{ username }}</div>
+            <div class="text-xs text-ink-3">{{ userEmail }}</div>
           </div>
         </div>
-        
+
         <div class="relative">
           <button
             @click="toggleProfileMenu"
-            class="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+            class="p-2 text-ink-3 hover:text-ink-2 transition-colors">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
           </button>
-          
-          <!-- Profile Dropdown -->
-          <div v-if="showProfileMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+
+<div v-if="showProfileMenu" class="absolute right-0 mt-2 w-48 bg-surface rounded-[var(--r-3)] py-1 z-50 border border-line" style="box-shadow: var(--shadow-2);">
             <button
               @click="goToMyPlan"
-              class="block w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-blue-50">
+              class="block w-full text-left px-4 py-2 text-sm text-accent hover:bg-accent-soft transition-colors">
               Мой тариф
             </button>
             <button
               @click="handleLogout"
-              class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+              class="block w-full text-left px-4 py-2 text-sm text-danger hover:bg-danger-soft transition-colors">
               Выйти
             </button>
           </div>
@@ -64,16 +62,16 @@ const toggleProfileMenu = () => {
 
 const handleLogout = async () => {
   try {
-    // Сначала перенаправляем на главную страницу
+
     console.log('🔄 Header: Redirecting to home before logout');
     await router.push('/');
-    
-    // Потом делаем логаут
+
+
     await logout();
     console.log('✅ Header: Logout completed');
   } catch (error) {
     console.error('Ошибка выхода:', error);
-    // В случае ошибки все равно пытаемся перенаправить
+
     router.push('/');
   }
   showProfileMenu.value = false;

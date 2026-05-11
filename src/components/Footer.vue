@@ -1,13 +1,13 @@
 <template>
-  <footer class="bg-white border-t px-6 py-4 mt-auto">
+  <footer class="bg-surface border-t border-line px-6 py-4 mt-auto">
     <div class="flex items-center justify-between">
       <div class="flex items-center space-x-2">
         <img class="w-5 h-5" src="/logo.svg" alt="Logo"/>
-        <span class="text-sm text-gray-600">Logisto WMS © 2026</span>
+        <span class="text-sm text-ink-3">Logisto WMS © 2026</span>
       </div>
       <router-link
         to="/legal"
-        class="text-sm text-gray-600 opacity-40 hover:opacity-70 transition-opacity">
+        class="text-sm text-ink-3 opacity-60 hover:opacity-100 transition-opacity">
         Правовая информация
       </router-link>
     </div>
@@ -15,7 +15,7 @@
 </template>
 
 <script setup>
-// No props or logic needed for footer
+
 </script>
 
 <style scoped>

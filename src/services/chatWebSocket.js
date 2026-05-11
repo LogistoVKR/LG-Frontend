@@ -3,7 +3,7 @@ import { useAuth } from '@/composables/useAuth.js';
 class ChatWebSocketService {
   constructor() {
     this.ws = null;
-    this.mode = null; // 'anonymous' | 'employee'
+    this.mode = null;
     this.reconnectAttempts = 0;
     this.maxReconnectAttempts = 10;
     this.reconnectTimer = null;
@@ -162,7 +162,7 @@ class ChatWebSocketService {
 
   _onOnline() {
     if (this.isIntentionallyClosed || !this.connectionParams) return;
-    // If we're already connected or reconnecting, do nothing
+
     if (this.ws && this.ws.readyState === WebSocket.OPEN) return;
     if (this.reconnectTimer) return;
 
@@ -175,7 +175,7 @@ class ChatWebSocketService {
     if (document.visibilityState !== 'visible') return;
     if (this.isIntentionallyClosed || !this.connectionParams) return;
 
-    // Check if the connection is still alive
+
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       if (!this.reconnectTimer) {
         console.log('[ChatWS] Tab visible, connection lost — triggering reconnect');
@@ -195,7 +195,7 @@ class ChatWebSocketService {
       try {
         this.ws.send(JSON.stringify({ type: 'PING' }));
       } catch {
-        // send failed — onclose will handle reconnect
+
       }
       this.pongTimeout = setTimeout(() => {
         console.warn('[ChatWS] Pong timeout — closing connection');

@@ -1,8 +1,7 @@
 <template>
   <section class="py-12 sm:py-16 px-4 sm:px-6 lg:px-8">
     <div class="max-w-4xl mx-auto">
-      <!-- Call to Action -->
-      <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 sm:p-12 text-center text-white">
+<div class="rounded-2xl p-8 sm:p-12 text-center" style="background: var(--accent); color: var(--accent-on);">
         <h3 class="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">
           {{ title }}
         </h3>
@@ -10,15 +9,18 @@
           {{ description }}
         </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          <button 
+          <button
             @click="handlePrimaryAction"
-            class="inline-flex items-center justify-center px-6 py-3 bg-white text-blue-600 rounded-lg hover:bg-gray-100 transition-colors font-medium"
+            class="inline-flex items-center justify-center px-6 py-3 bg-surface text-accent rounded-lg hover:bg-surface-2 transition-colors font-medium"
           >
             {{ primaryButtonText }}
           </button>
-          <button 
+          <button
             @click="handleSecondaryAction"
-            class="inline-flex items-center justify-center px-6 py-3 bg-blue-500 text-white border border-blue-400 rounded-lg hover:bg-blue-400 transition-colors font-medium"
+            class="inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium transition-colors"
+            style="background: rgba(255,255,255,0.12); color: var(--accent-on); border: 1px solid rgba(255,255,255,0.25);"
+            onmouseenter="this.style.background='rgba(255,255,255,0.2)'"
+            onmouseleave="this.style.background='rgba(255,255,255,0.12)'"
           >
             {{ secondaryButtonText }}
           </button>
@@ -34,7 +36,7 @@ import keycloakService from '@/services/keycloak.js';
 
 const router = useRouter();
 
-// Пропсы для кастомизации контента
+
 const props = defineProps({
   title: {
     type: String,
@@ -54,12 +56,12 @@ const props = defineProps({
   },
   primaryAction: {
     type: String,
-    default: 'pricing', // 'pricing' или 'register'
+    default: 'pricing',
     validator: (value) => ['pricing', 'register'].includes(value)
   }
 });
 
-// Обработчик основной кнопки
+
 const handlePrimaryAction = async () => {
   if (props.primaryAction === 'register') {
     try {
@@ -72,7 +74,7 @@ const handlePrimaryAction = async () => {
   }
 };
 
-// Обработчик вторичной кнопки (связаться с нами)
+
 const handleSecondaryAction = () => {
   router.push('/contact');
 };

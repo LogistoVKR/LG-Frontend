@@ -30,13 +30,13 @@ class KeycloakService {
 
       this.keycloak.onAuthSuccess = () => {
         console.log('KeycloakService: Auth success event triggered');
-        // Генерируем событие для обновления состояния приложения
+
         window.dispatchEvent(new CustomEvent('keycloak-auth-success'));
       };
 
       this.keycloak.onAuthLogout = () => {
         console.log('KeycloakService: Auth logout event triggered');
-        // Генерируем событие для обновления состояния приложения
+
         window.dispatchEvent(new CustomEvent('keycloak-auth-logout'));
       };
 
@@ -135,4 +135,4 @@ class KeycloakService {
   }
 }
 
-export default new KeycloakService(); 
+export default new KeycloakService();

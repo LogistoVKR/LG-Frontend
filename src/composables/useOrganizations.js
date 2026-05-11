@@ -4,31 +4,31 @@ import userService from '@/services/userService.js';
 
 export function useOrganizations() {
   const { getToken } = useAuth();
-  
-  // State
+
+
   const organizations = ref([]);
   const selectedOrganization = ref(null);
   const loading = ref(false);
   const error = ref(null);
 
-  // Computed
+
   const hasOrganizations = computed(() => organizations.value.length > 0);
   const selectedOrganizationId = computed(() => selectedOrganization.value?.id);
 
-  // Methods
+
   const loadOrganizations = async () => {
     loading.value = true;
     error.value = null;
-    
+
     try {
       const token = await getToken();
       const result = await userService.getOrganizations(0, 100, token);
       organizations.value = result.content || [];
-      
-      // Восстанавливаем выбранную организацию из localStorage
+
+
       getSelectedOrganizationFromStorage();
-      
-      // Если есть организации и не выбрана, выбираем первую
+
+
       if (organizations.value.length > 0 && !selectedOrganization.value) {
         selectedOrganization.value = organizations.value[0];
         localStorage.setItem('selectedOrganizationId', organizations.value[0].id);
@@ -43,7 +43,7 @@ export function useOrganizations() {
 
   const selectOrganization = (organization) => {
     selectedOrganization.value = organization;
-    // Сохраняем выбор в localStorage
+
     localStorage.setItem('selectedOrganizationId', organization.id);
   };
 
@@ -54,7 +54,7 @@ export function useOrganizations() {
       if (org) {
         selectedOrganization.value = org;
       } else {
-        // Если сохраненная организация не найдена, выбираем первую
+
         if (organizations.value.length > 0) {
           selectedOrganization.value = organizations.value[0];
           localStorage.setItem('selectedOrganizationId', organizations.value[0].id);
@@ -64,19 +64,19 @@ export function useOrganizations() {
   };
 
   return {
-    // State
+
     organizations,
     selectedOrganization,
     loading,
     error,
-    
-    // Computed
+
+
     hasOrganizations,
     selectedOrganizationId,
-    
-    // Methods
+
+
     loadOrganizations,
     selectOrganization,
     getSelectedOrganizationFromStorage
   };
-} 
+}

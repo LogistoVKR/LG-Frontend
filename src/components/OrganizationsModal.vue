@@ -1,61 +1,47 @@
 <template>
-  <div v-if="isOpen" class="fixed inset-0 bg-transparent backdrop-blur-sm flex items-center justify-center z-50" @click="closeModal">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4" @click.stop>
-      <!-- Header -->
-      <div class="flex items-center justify-between p-6 border-b">
-        <div>
-          <h3 class="text-xl font-semibold text-gray-900">
-            {{ editingOrganization ? 'Редактировать' : 'Создать' }} организацию
-          </h3>
-        </div>
+  <div v-if="isOpen" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50" @click="closeModal">
+    <div class="bg-surface rounded-[var(--r-4)] w-full max-w-md mx-4" style="box-shadow: var(--shadow-3);" @click.stop>
+      <div class="flex items-center justify-between px-6 py-4 border-b border-line">
+        <h3 class="h3 text-ink">
+          {{ editingOrganization ? 'Редактировать' : 'Создать' }} организацию
+        </h3>
       </div>
 
-      <!-- Form Content -->
       <form @submit.prevent="saveOrganization" class="p-6">
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Название *</label>
-            <input
-              v-model="form.name"
-              type="text"
-              required
-              maxlength="255"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-            <p class="text-xs text-gray-500 mt-1">{{ form.name.length }}/255 символов</p>
+            <label class="caption block mb-1">Название *</label>
+            <input v-model="form.name" type="text" required maxlength="255" class="field">
+            <p class="body-s text-ink-3 mt-1">{{ form.name.length }}/255 символов</p>
           </div>
-          
+
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Описание</label>
-            <textarea
-              v-model="form.description"
-              rows="3"
-              maxlength="255"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
-            <p class="text-xs text-gray-500 mt-1">{{ form.description.length }}/255 символов</p>
+            <label class="caption block mb-1">Описание</label>
+            <textarea v-model="form.description" rows="3" maxlength="255" class="field" style="height: auto; padding-top: 8px; padding-bottom: 8px;"></textarea>
+            <p class="body-s text-ink-3 mt-1">{{ form.description.length }}/255 символов</p>
           </div>
 
           <div v-if="canManageOzonKey">
-            <label class="block text-sm font-medium text-gray-700 mb-1">API ключ Ozon</label>
-            <div class="flex items-center space-x-2">
-              <input
-                v-model="form.ozonApiKey"
-                type="password"
-                autocomplete="off"
-                maxlength="255"
-                :placeholder="ozonKeyPlaceholder"
-                class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <label class="caption block mb-1">Client ID Ozon</label>
+            <input v-model="form.ozonClientId" type="text" maxlength="255" placeholder="Введите Client ID Ozon" class="field">
+          </div>
+
+          <div v-if="canManageOzonKey">
+            <label class="caption block mb-1">API ключ Ozon</label>
+            <div class="flex items-center gap-2">
+              <input v-model="form.ozonApiKey" type="password" autocomplete="off" maxlength="255" :placeholder="ozonKeyPlaceholder" class="field flex-1">
               <button
                 v-if="editingOrganization?.hasOzonIntegration"
                 type="button"
                 :disabled="deletingKey || saving"
                 @click="removeOzonApiKey"
-                class="px-3 py-2 text-sm text-red-600 border border-red-300 rounded-lg hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap">
+                class="btn btn-secondary btn-sm text-danger border-danger hover:bg-danger-soft disabled:opacity-50 whitespace-nowrap">
                 {{ deletingKey ? 'Удаление...' : 'Удалить ключ' }}
               </button>
             </div>
-            <p class="text-xs text-gray-500 mt-1">
+            <p class="body-s text-ink-3 mt-1">
               <template v-if="editingOrganization?.hasOzonIntegration">
-                Ключ установлен. Оставьте поле пустым, чтобы сохранить текущий ключ, введите новое значение для замены или нажмите «Удалить ключ», чтобы отключить интеграцию.
+                Ключ установлен. Оставьте поле пустым, чтобы сохранить текущий ключ, или введите новое значение для замены.
               </template>
               <template v-else>
                 Введите API ключ для интеграции с Ozon (необязательно)
@@ -63,25 +49,15 @@
             </p>
           </div>
         </div>
-        
-        <div class="flex items-center justify-end space-x-3 mt-6">
-          <button
-            type="button"
-            @click="closeModal"
-            class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-            Отмена
-          </button>
-          <button
-            type="submit"
-            :disabled="saving || !form.name.trim()"
-            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+
+        <div class="flex items-center justify-end gap-3 mt-6">
+          <button type="button" @click="closeModal" class="btn btn-secondary">Отмена</button>
+          <button type="submit" :disabled="saving || !form.name.trim()" class="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
             {{ saving ? 'Сохранение...' : (editingOrganization ? 'Сохранить' : 'Создать') }}
           </button>
         </div>
       </form>
     </div>
-
-
   </div>
 </template>
 
@@ -113,6 +89,7 @@ const deletingKey = ref(false);
 const form = reactive({
   name: '',
   description: '',
+  ozonClientId: '',
   ozonApiKey: ''
 });
 
@@ -133,6 +110,7 @@ const closeModal = () => {
 const resetForm = () => {
   form.name = '';
   form.description = '';
+  form.ozonClientId = '';
   form.ozonApiKey = '';
 };
 
@@ -149,8 +127,11 @@ const saveOrganization = async () => {
       name: form.name,
       description: form.description
     };
-    if (canManageOzonKey.value && form.ozonApiKey.trim() !== '') {
-      payload.ozonApiKey = form.ozonApiKey;
+    if (canManageOzonKey.value) {
+      payload.ozonClientId = form.ozonClientId.trim();
+      if (form.ozonApiKey.trim() !== '') {
+        payload.ozonApiKey = form.ozonApiKey;
+      }
     }
 
     let result;
@@ -163,7 +144,7 @@ const saveOrganization = async () => {
       organizationsStore.addOrganization(result);
     }
 
-    // Эмитим событие с результатом операции
+
     emit('organizationSaved', {
       action: props.editingOrganization ? 'updated' : 'created',
       organization: result
@@ -198,16 +179,17 @@ const removeOzonApiKey = async () => {
   }
 };
 
-// Сбрасываем форму при открытии модала или заполняем при редактировании
+
 watch(() => props.isOpen, (newValue) => {
   if (newValue) {
     if (props.editingOrganization) {
       form.name = props.editingOrganization.name || '';
       form.description = props.editingOrganization.description || '';
+      form.ozonClientId = props.editingOrganization.ozonClientId || '';
       form.ozonApiKey = '';
     } else {
       resetForm();
     }
   }
 });
-</script> 
+</script>

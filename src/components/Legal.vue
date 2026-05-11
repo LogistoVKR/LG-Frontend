@@ -2,13 +2,13 @@
   <section class="py-16">
     <div class="container mx-auto px-4 max-w-3xl">
       <h1 class="text-2xl font-bold mb-4">Правовая информация</h1>
-      <p class="text-gray-600">Страница находится в разработке.</p>
+      <p class="text-ink-2">Страница находится в разработке.</p>
     </div>
   </section>
 </template>
 
 <script setup>
-// Placeholder page
+
 </script>
 
 <style scoped>
