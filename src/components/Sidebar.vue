@@ -144,7 +144,7 @@ const chatStore = useChatStore();
 
 const canViewMovements = computed(() => {
   const role = organizationsStore.selectedOrganization?.role;
-  return role === 'ADMIN' || role === 'OWNER';
+  return role === 'ADMIN' || role === 'OWNER' || role === 'WAREHOUSE_MANAGER' || role === 'MEMBER';
 });
 
 const totalUnread = computed(() => chatStore.totalUnread);

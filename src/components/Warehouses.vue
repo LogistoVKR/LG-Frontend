@@ -166,7 +166,7 @@ const { isSidebarOpen } = useSidebar();
 
 const canManageWarehouses = computed(() => {
   const role = organizationsStore.selectedOrganization?.role;
-  return role === 'ADMIN' || role === 'OWNER';
+  return role === 'ADMIN' || role === 'OWNER' || role === 'WAREHOUSE_MANAGER';
 });
 
 const loading = ref(false);
